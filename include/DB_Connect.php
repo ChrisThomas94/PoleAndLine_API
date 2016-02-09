@@ -8,13 +8,13 @@ class DB_Connect
     // constructor
     function __construct()
     {
- 
+		$this->connect();
     }
  
     // destructor
     function __destruct()
     {
-        // $this->close();
+        $this->close();
     }
  
     // Connecting to database
