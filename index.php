@@ -13,10 +13,11 @@
 // Request type is Register new user
 // include DB_function
 require_once 'include/DB_Functions.php';
+
 $db = new DB_Functions();
-$name = $_POST['name'];
-$email = $_POST['email'];
-$password = $_POST['password'];
+$name = (isset($_POST['name']) ? $_POST['name'] : null);
+$email = (isset($_POST['email']) ? $_POST['email'] : null);
+$password = (isset($_POST['password']) ? $_POST['password'] : null);
  
 // check if user is already existed
 if ($db->isUserExisted($email)) {

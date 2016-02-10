@@ -1,0 +1,13 @@
+{
+    "$register": {
+		"uid": "123",
+		"user":	{
+			"name": "Chris",
+			"email": "chirs@gmail.com",
+			"created_at": "12/02/2016",
+			"updated_at": "13/02/2016"
+		}
+    },
+	"error": false,
+	"error_msg": "Error occured in Registration"
+}
