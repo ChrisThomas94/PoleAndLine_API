@@ -15,6 +15,12 @@
 require_once 'include/DB_Functions.php';
 $db = new DB_Functions();
 
+$data = file_get_contents("php://input");
+echo $data;
+
+$_POST = json_decode($data);
+echo $_POST;
+
 $name = (isset($_POST['name']) ? $_POST['name'] : null);
 $email = (isset($_POST['email']) ? $_POST['email'] : null);
 $password = (isset($_POST['password']) ? $_POST['password'] : null);
@@ -44,4 +50,5 @@ if ($db->isUserExisted($email)) {
 		echo json_encode($response);
 	}
 }
+
 ?>
