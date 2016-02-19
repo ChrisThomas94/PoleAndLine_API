@@ -1,4 +1,5 @@
 <?php
+require_once 'DB_Connect.php';
 error_reporting(E_ALL ^ E_DEPRECATED);
 
 class DB_Functions {
@@ -7,7 +8,6 @@ class DB_Functions {
  
     // constructor
     function __construct() {
-        require_once 'DB_Connect.php';
         // connecting to database
         $this->db = new DB_Connect();
         $this->db->connect();
