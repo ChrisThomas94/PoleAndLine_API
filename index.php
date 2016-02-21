@@ -19,36 +19,17 @@ $inputJSON = file_get_contents('php://input');
 echo $inputJSON;
 
 $filename="test.txt";
-file_put_contents($filename, $inputJSON);
+//file_put_contents($filename, $inputJSON);
 
-$_POST = json_decode(file_get_contents('php://input'), true);
+//$_POST = json_decode(file_get_contents('php://input'), true);
+
+$method = $_SERVER['REQUEST_METHOD'];
+file_put_contents($filename, $method);
 
 
 $name = (isset($_POST['name']) ? $_POST['name'] : null);
 $email = (isset($_POST['email']) ? $_POST['email'] : null);
 $password = (isset($_POST['password']) ? $_POST['password'] : null);
-
-  
-//login
-// check for user
-$user = $db->getUserByEmailAndPassword($email, $password);
-if ($user != false) {
-	// user found
-	$response["error"] = FALSE;
-	$response["uid"] = $user["unique_id"];
-	$response["user"]["name"] = $user["name"];
-	$response["user"]["email"] = $user["email"];
-	$response["user"]["created_at"] = $user["created_at"];
-	$response["user"]["updated_at"] = $user["updated_at"];
-	echo json_encode($response);
-} else {
-	// user not found
-	// echo json with error = 1
-	$response["error"] = TRUE;
-	$response["error_msg"] = "Incorrect email or password!";
-	echo json_encode($response);
-}
-//end login
   
 // check if user is already existed
 if ($db->isUserExisted($email)) {
