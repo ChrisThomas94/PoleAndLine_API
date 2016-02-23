@@ -100,6 +100,36 @@ class DB_Functions {
  
         return $hash;
     }
+	
+	public function storeSite($lat, $lon, $title, $description, $rating){
+		$ucid = uniqid('', true);
+        $result = mysqli_query($this->db->con,"INSERT INTO campsites(unique_id, latitude, longitude, title, description, rating, created_at) VALUES('$ucid', '$lat', '$lon', '$title', '$description', '$rating', NOW())");
+        // check for result
+        if ($result) {
+            // gettig the details
+            $cid = mysqli_insert_id($this->db->con); // last inserted id
+            $result = mysqli_query($this->db->con,"SELECT * FROM campsites WHERE cid = $cid");
+            // return details
+            return mysqli_fetch_array($result);
+        } else {
+            return false;
+        }
+	}
+	
+	public function nearbySiteExist($lat, $lon){
+			
+		$distLat = $lat+0.00006;
+		$distLon = $lon+0.00002;
+		$result = mysqli_query($this->db->con,"SELECT unique_id from campsites WHERE latitude <= '$distLat' AND longitude <= '$distLon'");
+        $no_of_rows = mysqli_num_rows($result);
+        if ($no_of_rows > 0) {
+            // nearby sites exist
+            return true;
+        } else {
+            // no nearby sites exist
+            return false;
+        }
+	}
  
 }
  

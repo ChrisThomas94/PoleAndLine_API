@@ -87,7 +87,46 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
                 echo json_encode($response);
             }
         }
-    } else {
+    } else if ($tag == 'addSite') {
+	
+		//request type is add site
+		$lat = (isset($decoded['lat']) ? $decoded['lat'] : null);
+		$lon = (isset($decoded['lon']) ? $decoded['lon'] : null);
+		$title = (isset($decoded['title']) ? $decoded['title'] : null);
+		$description = (isset($decoded['description']) ? $decoded['description'] : null);
+		$rating = (isset($decoded['rating']) ? $decoded['rating'] : null);
+		
+		//checks go here
+		if ($db->nearbySiteExist($lat, $lon)) {
+            // user is already existed - error response
+            $response["error"] = TRUE;
+            $response["error_msg"] = "Nearby sites exist";
+            echo json_encode($response);
+        } else {
+			//store site
+			$site = $db->storeSite($lat, $lon, $title, $description, $rating);
+			if ($site) {
+				//site stored successfully
+				$response["error"] = FALSE;
+				$response["cid"] = $site["unique_id"];
+				$response["site"]["lat"] = $site["latitude"];
+				$response["site"]["lon"] = $site["longitude"];
+				$response["site"]["title"] = $site["title"];
+				$response["site"]["description"] = $site["description"];
+				$response["site"]["rating"] = $site["rating"];
+				$response["site"]["created_at"] = $site["created_at"];
+				$response["site"]["updated_at"] = $site["updated_at"];
+				echo json_encode($response);
+				
+			} else {
+				//site failed to store
+				$response["error"] = TRUE;
+				$response["error_msg"] = "Error occured in Registartion";
+				echo json_encode($response);
+			}
+		}
+		
+	} else {
         // user failed to store
         $response["error"] = TRUE;
         $response["error_msg"] = "Unknown 'tag' value. It should be either 'login' or 'register'";
