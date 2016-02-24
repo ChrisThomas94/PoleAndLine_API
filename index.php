@@ -90,6 +90,8 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
     } else if ($tag == 'addSite') {
 	
 		//request type is add site
+		$uid = (isset($decoded['uid']) ? $decoded['uid'] : null);
+		$relat = (isset($decoded['relat']) ? $decoded['relat'] : null);
 		$lat = (isset($decoded['lat']) ? $decoded['lat'] : null);
 		$lon = (isset($decoded['lon']) ? $decoded['lon'] : null);
 		$title = (isset($decoded['title']) ? $decoded['title'] : null);
@@ -105,10 +107,13 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
         } else {
 			//store site
 			$site = $db->storeSite($lat, $lon, $title, $description, $rating);
+			
+			$ucid = $site["unique_cid"];
+			
 			if ($site) {
 				//site stored successfully
 				$response["error"] = FALSE;
-				$response["cid"] = $site["unique_id"];
+				$response["cid"] = $site["unique_cid"];
 				$response["site"]["lat"] = $site["latitude"];
 				$response["site"]["lon"] = $site["longitude"];
 				$response["site"]["title"] = $site["title"];
@@ -124,6 +129,23 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 				$response["error_msg"] = "Error occured in Registartion";
 				echo json_encode($response);
 			}
+			
+			//link site to user
+			$link = $db->linkSiteToOwner($uid, $ucid, $relat);
+			
+			if ($link) {
+				//link made successfully
+				$responseLink["error"] = FALSE;
+				$responseLink["oid"] = $link["unique_oid"];
+				echo json_encode($responseLink);
+			
+			} else {
+				//link failed to be made
+				$response["error"] = TRUE;
+				$response["error_msg"] = "Error occured in linking";
+				echo json_encode($response);
+			}
+			
 		}
 		
 	} else {
