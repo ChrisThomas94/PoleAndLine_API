@@ -19,7 +19,7 @@ $inputJSON = file_get_contents('php://input');
 
 $filename="test.txt";
 //file_put_contents($filename,json_decode(file_get_contents('php://input'), true));
-file_put_contents($filename, $inputJSON);
+//file_put_contents($filename, $inputJSON);
 
 //die(json_decode($inputJSON, true));
 
@@ -43,7 +43,7 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
         if ($user != false) {
             // user found
             $response["error"] = FALSE;
-            $response["uid"] = $user["unique_id"];
+            $response["uid"] = $user["unique_uid"];
             $response["user"]["name"] = $user["name"];
             $response["user"]["email"] = $user["email"];
             $response["user"]["created_at"] = $user["created_at"];
@@ -74,7 +74,7 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
             if ($user) {
                 // user stored successfully
                 $response["error"] = FALSE;
-                $response["uid"] = $user["unique_id"];
+                $response["uid"] = $user["unique_uid"];
                 $response["user"]["name"] = $user["name"];
                 $response["user"]["email"] = $user["email"];
                 $response["user"]["created_at"] = $user["created_at"];
@@ -148,12 +148,39 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 			
 		}
 		
+	} else if ($tag == 'knownSites') {
+	
+		//request type is fetch knownSites
+		$uid = (isset($decoded['uid']) ? $decoded['uid'] : null);
+		$relat = (isset($decoded['relat']) ? $decoded['relat'] : null);
+		
+		//get sites
+		$known = $db->fetchSites($uid, $relat);
+		$size = sizeof($known);
+        if ($known != false) {
+            // site found
+            $response["error"] = FALSE;
+			$response["size"] = $size;
+			for($i = 0; $i<$size; $i++){
+				$response["site$i"] = $known[$i];
+			}
+            echo json_encode($response);
+        } else {
+            // site not found
+            // echo json with error = 1
+            $response["error"] = TRUE;
+            $response["error_msg"] = "Incorrect email or password!";
+            echo json_encode($response);
+        }
+		
+			
 	} else {
-        // user failed to store
+        // request failed
         $response["error"] = TRUE;
-        $response["error_msg"] = "Unknown 'tag' value. It should be either 'login' or 'register'";
+        $response["error_msg"] = "Unknown 'tag' value.";
         echo json_encode($response);
-    }
+    } 
+	
 } else {
     $response["error"] = TRUE;
     $response["error_msg"] = "Required parameter 'tag' is missing!";

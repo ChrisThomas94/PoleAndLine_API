@@ -1,1 +1,1 @@
-{"tag":"addSite","uid":"56cb80b1e7f307.47066285","relat":"90","lat":"54.1200445218095","lon":"-1.985885761678219","title":"ryuff","description":"uugff","rating":"5.0"}
+{"tag":"knownSites","uid":"56cb80b1e7f307.47066285","relat":"90"}

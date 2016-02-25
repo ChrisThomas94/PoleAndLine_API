@@ -26,7 +26,7 @@ class DB_Functions {
         $hash = $this->hashSSHA($password);
         $encrypted_password = $hash["encrypted"]; // encrypted password
         $salt = $hash["salt"]; // salt
-        $result = mysqli_query($this->db->con,"INSERT INTO users(unique_id, name, email, encrypted_password, salt, created_at) VALUES('$uuid', '$name', '$email', '$encrypted_password', '$salt', NOW())");
+        $result = mysqli_query($this->db->con,"INSERT INTO users(unique_uid, name, email, encrypted_password, salt, created_at) VALUES('$uuid', '$name', '$email', '$encrypted_password', '$salt', NOW())");
         // check for result
         if ($result) {
             // gettig the details
@@ -120,9 +120,9 @@ class DB_Functions {
 	
 	public function nearbySiteExist($lat, $lon){
 			
-		$distLat = $lat+0.00006;
-		$distLon = $lon+0.00002;
-		$result = mysqli_query($this->db->con,"SELECT unique_cid from campsites WHERE latitude <= '$distLat' AND longitude <= '$distLon'");
+		$distLat = $lat+0.0001;
+		$distLon = $lon+0.0001;
+		$result = mysqli_query($this->db->con,"SELECT unique_cid from campsites WHERE (latitude >= $lat AND latitude <= '$distLat') AND (longitude >= $lon AND longitude <= '$distLon')");
         $no_of_rows = mysqli_num_rows($result);
         if ($no_of_rows > 0) {
             // nearby sites exist
@@ -147,6 +147,35 @@ class DB_Functions {
         } else {
             return false;
         }
+	}
+	
+	public function fetchSites($uid, $relat){
+		//$result = mysqli_query($this->db->con,"SELECT * FROM users WHERE email = '$email'") or die(mysqli_connect_errno());
+		$result = mysqli_query($this->db->con, "SELECT longitude, latitude FROM campsites INNER JOIN user_has_campsites ON user_has_campsites.campsite_fk = campsites.unique_cid INNER JOIN users ON users.unique_uid = user_has_campsites.user_fk WHERE user_has_campsites.relationship = '$relat' AND users.unique_uid = '$uid'");
+		
+        // check for result 
+        $no_of_rows = mysqli_num_rows($result);
+		
+		//echo mysqli_errno($this->db->con);
+		//echo mysqli_error($this->db->con);
+		
+		//echo $no_of_rows;
+		
+        if ($no_of_rows > 0) {
+		
+            while ($row = $result->fetch_assoc()) {
+			//print_r($row);
+			$new_array[] = $row;
+			
+			}	
+            
+			return $new_array;
+			//return mysqli_fetch_array($result);
+           
+        } else {
+            return false;
+        }
+		
 	}
  
 }
