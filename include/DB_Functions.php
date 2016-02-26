@@ -177,6 +177,35 @@ class DB_Functions {
         }
 		
 	}
+	
+	public function fetchUnknownSites($uid, $relatOwn, $relatTrade){
+		//$result = mysqli_query($this->db->con,"SELECT * FROM users WHERE email = '$email'") or die(mysqli_connect_errno());
+		$result = mysqli_query($this->db->con, "SELECT latitude, longitude FROM campsites INNER JOIN user_has_campsites ON user_has_campsites.campsite_fk = campsites.unique_cid INNER JOIN users ON users.unique_uid = user_has_campsites.user_fk WHERE (user_has_campsites.relationship = '$relatOwn' OR user_has_campsites.relationship = '$relatTrade') AND users.unique_uid != '$uid'");
+		
+        // check for result 
+        $no_of_rows = mysqli_num_rows($result);
+		
+		//echo mysqli_errno($this->db->con);
+		//echo mysqli_error($this->db->con);
+		
+		//echo $no_of_rows;
+		
+        if ($no_of_rows > 0) {
+		
+            while ($row = $result->fetch_assoc()) {
+			//print_r($row);
+			$new_array[] = $row;
+			
+			}	
+            
+			return $new_array;
+			//return mysqli_fetch_array($result);
+           
+        } else {
+            return false;
+        }
+		
+	}
  
 }
  

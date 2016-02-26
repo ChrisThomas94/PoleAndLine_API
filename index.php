@@ -169,7 +169,34 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
             // site not found
             // echo json with error = 1
             $response["error"] = TRUE;
-            $response["error_msg"] = "Incorrect email or password!";
+            $response["error_msg"] = "Error fetching known sites!!";
+            echo json_encode($response);
+        }
+		
+			
+	} else if ($tag == 'unknownSites') {
+	
+		//request type is fetch knownSites
+		$uid = (isset($decoded['uid']) ? $decoded['uid'] : null);
+		$relatOwn = (isset($decoded['relatOwn']) ? $decoded['relatOwn'] : null);
+		$relatTrade = (isset($decoded['relatTrade']) ? $decoded['relatTrade'] : null);
+		
+		//get sites
+		$unknown = $db->fetchUnknownSites($uid, $relatOwn, $relatTrade);
+		$size = sizeof($unknown);
+        if ($unknown != false) {
+            // site found
+            $response["error"] = FALSE;
+			$response["size"] = $size;
+			for($i = 0; $i<$size; $i++){
+				$response["site$i"] = $unknown[$i];
+			}
+            echo json_encode($response);
+        } else {
+            // site not found
+            // echo json with error = 1
+            $response["error"] = TRUE;
+            $response["error_msg"] = "Error fetching unknown sites!";
             echo json_encode($response);
         }
 		
