@@ -150,7 +150,7 @@ class DB_Functions {
 	}
 	
 	public function fetchSites($uid, $relat){
-		//$result = mysqli_query($this->db->con,"SELECT * FROM users WHERE email = '$email'") or die(mysqli_connect_errno());
+		
 		$result = mysqli_query($this->db->con, "SELECT longitude, latitude FROM campsites INNER JOIN user_has_campsites ON user_has_campsites.campsite_fk = campsites.unique_cid INNER JOIN users ON users.unique_uid = user_has_campsites.user_fk WHERE user_has_campsites.relationship = '$relat' AND users.unique_uid = '$uid'");
 		
         // check for result 
@@ -179,7 +179,7 @@ class DB_Functions {
 	}
 	
 	public function fetchUnknownSites($uid, $relatOwn, $relatTrade){
-		//$result = mysqli_query($this->db->con,"SELECT * FROM users WHERE email = '$email'") or die(mysqli_connect_errno());
+		
 		$result = mysqli_query($this->db->con, "SELECT latitude, longitude FROM campsites INNER JOIN user_has_campsites ON user_has_campsites.campsite_fk = campsites.unique_cid INNER JOIN users ON users.unique_uid = user_has_campsites.user_fk WHERE (user_has_campsites.relationship = '$relatOwn' OR user_has_campsites.relationship = '$relatTrade') AND users.unique_uid != '$uid'");
 		
         // check for result 
