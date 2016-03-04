@@ -97,6 +97,16 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 		$title = (isset($decoded['title']) ? $decoded['title'] : null);
 		$description = (isset($decoded['description']) ? $decoded['description'] : null);
 		$rating = (isset($decoded['rating']) ? $decoded['rating'] : null);
+		$feature1 = (isset($decoded['feature1']) ? $decoded['feature1'] : null);
+		$feature2 = (isset($decoded['feature2']) ? $decoded['feature2'] : null);
+		$feature3 = (isset($decoded['feature3']) ? $decoded['feature3'] : null);
+		$feature4 = (isset($decoded['feature4']) ? $decoded['feature4'] : null);
+		$feature5 = (isset($decoded['feature5']) ? $decoded['feature5'] : null);
+		$feature6 = (isset($decoded['feature6']) ? $decoded['feature6'] : null);
+		$feature7 = (isset($decoded['feature7']) ? $decoded['feature7'] : null);
+		$feature8 = (isset($decoded['feature8']) ? $decoded['feature8'] : null);
+		$feature9 = (isset($decoded['feature9']) ? $decoded['feature9'] : null);
+		$feature10 = (isset($decoded['feature10']) ? $decoded['feature10'] : null);
 		
 		//checks go here
 		if ($db->nearbySiteExist($lat, $lon)) {
@@ -106,7 +116,7 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
             echo json_encode($response);
         } else {
 			//store site
-			$site = $db->storeSite($lat, $lon, $title, $description, $rating);
+			$site = $db->storeSite($lat, $lon, $title, $description, $rating, $feature1, $feature2, $feature3, $feature4, $feature5, $feature6, $feature7, $feature8, $feature9, $feature10);
 			
 			$ucid = $site["unique_cid"];
 			
@@ -119,6 +129,16 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 				$response["site"]["title"] = $site["title"];
 				$response["site"]["description"] = $site["description"];
 				$response["site"]["rating"] = $site["rating"];
+				$response["site"]["feature1"] = $site["feature1"];
+				$response["site"]["feature2"] = $site["feature2"];
+				$response["site"]["feature3"] = $site["feature3"];
+				$response["site"]["feature4"] = $site["feature4"];
+				$response["site"]["feature5"] = $site["feature5"];
+				$response["site"]["feature6"] = $site["feature6"];
+				$response["site"]["feature7"] = $site["feature7"];
+				$response["site"]["feature8"] = $site["feature8"];
+				$response["site"]["feature9"] = $site["feature9"];
+				$response["site"]["feature10"] = $site["feature10"];
 				$response["site"]["created_at"] = $site["created_at"];
 				$response["site"]["updated_at"] = $site["updated_at"];
 				echo json_encode($response);

@@ -101,9 +101,9 @@ class DB_Functions {
         return $hash;
     }
 	
-	public function storeSite($lat, $lon, $title, $description, $rating){
+	public function storeSite($lat, $lon, $title, $description, $rating, $feature1, $feature2, $feature3, $feature4, $feature5, $feature6, $feature7, $feature8, $feature9, $feature10){
 		$ucid = uniqid('', true);
-        $result = mysqli_query($this->db->con,"INSERT INTO campsites(unique_cid, latitude, longitude, title, description, rating, created_at) VALUES('$ucid', '$lat', '$lon', '$title', '$description', '$rating', NOW())");
+        $result = mysqli_query($this->db->con,"INSERT INTO campsites(unique_cid, latitude, longitude, title, description, rating, created_at, feature1, feature2, feature3, feature4, feature5, feature6, feature7, feature8, feature9, feature10) VALUES('$ucid', '$lat', '$lon', '$title', '$description', '$rating', NOW(), $feature1, $feature2, $feature3, $feature4, $feature5, $feature6, $feature7, $feature8, $feature9, $feature10)");
 		
         // check for result
         if ($result) {
@@ -151,7 +151,7 @@ class DB_Functions {
 	
 	public function fetchSites($uid, $relat){
 		
-		$result = mysqli_query($this->db->con, "SELECT longitude, latitude FROM campsites INNER JOIN user_has_campsites ON user_has_campsites.campsite_fk = campsites.unique_cid INNER JOIN users ON users.unique_uid = user_has_campsites.user_fk WHERE user_has_campsites.relationship = '$relat' AND users.unique_uid = '$uid'");
+		$result = mysqli_query($this->db->con, "SELECT * FROM campsites INNER JOIN user_has_campsites ON user_has_campsites.campsite_fk = campsites.unique_cid INNER JOIN users ON users.unique_uid = user_has_campsites.user_fk WHERE user_has_campsites.relationship = '$relat' AND users.unique_uid = '$uid'");
 		
         // check for result 
         $no_of_rows = mysqli_num_rows($result);
