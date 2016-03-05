@@ -180,7 +180,7 @@ class DB_Functions {
 	
 	public function fetchUnknownSites($uid, $relatOwn, $relatTrade){
 		
-		$result = mysqli_query($this->db->con, "SELECT latitude, longitude FROM campsites INNER JOIN user_has_campsites ON user_has_campsites.campsite_fk = campsites.unique_cid INNER JOIN users ON users.unique_uid = user_has_campsites.user_fk WHERE (user_has_campsites.relationship = '$relatOwn' OR user_has_campsites.relationship = '$relatTrade') AND users.unique_uid != '$uid'");
+		$result = mysqli_query($this->db->con, "SELECT * FROM campsites INNER JOIN user_has_campsites ON user_has_campsites.campsite_fk = campsites.unique_cid INNER JOIN users ON users.unique_uid = user_has_campsites.user_fk WHERE (user_has_campsites.relationship = '$relatOwn' OR user_has_campsites.relationship = '$relatTrade') AND users.unique_uid != '$uid'");
 		
         // check for result 
         $no_of_rows = mysqli_num_rows($result);
