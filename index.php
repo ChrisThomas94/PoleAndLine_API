@@ -221,6 +221,41 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
         }
 		
 			
+	} else if($tag == 'tradeRequest') {
+	
+		//request type is trade request
+		$uid = (isset($decoded['uid']) ? $decoded['uid'] : null);
+		$tradeStatus = (isset($decoded['tradeStatus']) ? $decoded['tradeStatus'] : null);
+		$sendLat = (isset($decoded['sendLat']) ? $decoded['sendLat'] : null);
+		$sendLon = (isset($decoded['sendLon']) ? $decoded['sendLon'] : null);
+		$recieveLat = (isset($decoded['recieveLat']) ? $decoded['recieveLat'] : null);
+		$recieveLon = (isset($decoded['recieveLon']) ? $decoded['recieveLon'] : null);
+		
+		//find owner of site and cid
+		$reciever_data = $db->getOwnerOfSite($recieveLat, $recieveLon);
+		$reciever_fk = $reciever_data['user_fk'];
+		$recieve_fk = $reciever_data['campsite_fk'];
+		
+		$sender_data = $db->getOwnerOfSite($sendLat, $sendLon);
+		$send_fk = $sender_data['campsite_fk'];
+
+		//create trade record
+		$tradeReq = $db->createRequest($uid, $tradeStatus, $send_fk, $recieve_fk, $reciever_fk);
+		if($tradeReq !=false) {
+		
+			//trade ok
+			$response["error"] = FALSE;
+			echo json_encode($response);
+			
+		} else {
+			// trade failed
+            $response["error"] = TRUE;
+            $response["error_msg"] = "Error with trade!";
+            echo json_encode($response);
+		}
+		
+		
+	
 	} else {
         // request failed
         $response["error"] = TRUE;

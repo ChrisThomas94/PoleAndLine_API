@@ -206,6 +206,37 @@ class DB_Functions {
         }
 		
 	}
+	
+	public function createRequest($uid, $tradeStatus, $send_fk, $recieve_fk, $reciever_fk){
+	
+		$utid = uniqid('', true);
+		
+		$result = mysqli_query($this->db->con, "INSERT INTO trades (unique_tid, status, sender_uid_fk, reciever_uid_fk, send_cid_fk, recieve_cid_fk, created_at) VALUES ('$utid', '$tradeStatus', '$uid', '$reciever_fk', '$send_fk', '$recieve_fk', NOW())");
+	
+		if ($result) {
+            
+            return true;
+        } else {
+            return false;
+        }
+	
+	}
+	
+	
+	
+	public function getOwnerOfSite($lat, $lon){
+	
+		//get user id using latlng and relationship
+		$result = mysqli_query($this->db->con, "SELECT user_fk, campsite_fk FROM user_has_campsites INNER JOIN users ON user_has_campsites.user_fk = users.unique_uid INNER JOIN campsites ON user_has_campsites.campsite_fk = campsites.unique_cid WHERE (campsites.latitude = $lat AND campsites.longitude = $lon  AND user_has_campsites.relationship = '90')");
+	
+		if ($result) {
+            
+            return mysqli_fetch_array($result);
+        } else {
+            return false;
+        }
+	
+	}
  
 }
  
