@@ -222,15 +222,24 @@ class DB_Functions {
 	
 	}
 	
-	
-	
 	public function getOwnerOfSite($lat, $lon){
 	
 		//get user id using latlng and relationship
-		$result = mysqli_query($this->db->con, "SELECT user_fk, campsite_fk FROM user_has_campsites INNER JOIN users ON user_has_campsites.user_fk = users.unique_uid INNER JOIN campsites ON user_has_campsites.campsite_fk = campsites.unique_cid WHERE (campsites.latitude = $lat AND campsites.longitude = $lon  AND user_has_campsites.relationship = '90')");
+		$result = mysqli_query($this->db->con, "SELECT user_fk, campsite_fk, email FROM user_has_campsites INNER JOIN users ON user_has_campsites.user_fk = users.unique_uid INNER JOIN campsites ON user_has_campsites.campsite_fk = campsites.unique_cid WHERE (campsites.latitude = '$lat' AND campsites.longitude = '$lon'  AND user_has_campsites.relationship = '90')");
 	
 		if ($result) {
-            
+            return mysqli_fetch_array($result);
+        } else {
+            return false;
+        }
+	
+	}
+	
+	public function checkForExistingTrade($uid, $reciever_uid_fk, $send_cid_fk, $recieve_cid_fk){
+	
+		$result = mysqli_query($this->db->con, "SELECT 'unique_tid' FROM trades WHERE (sender_uid_fk = '$uid' AND reciever_uid_fk = '$reciever_uid_fk' AND send_cid_fk = '$send_cid_fk' AND recieve_cid_fk = '$recieve_cid_fk')");
+
+		if ($result) {    
             return mysqli_fetch_array($result);
         } else {
             return false;

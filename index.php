@@ -233,27 +233,66 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 		
 		//find owner of site and cid
 		$reciever_data = $db->getOwnerOfSite($recieveLat, $recieveLon);
-		$reciever_fk = $reciever_data['user_fk'];
-		$recieve_fk = $reciever_data['campsite_fk'];
+		$reciever_uid_fk = $reciever_data['user_fk'];
+		$recieve_cid_fk = $reciever_data['campsite_fk'];
+		$reciever_email = $reciever_data['email'];
 		
+		//find campsite of sender
 		$sender_data = $db->getOwnerOfSite($sendLat, $sendLon);
-		$send_fk = $sender_data['campsite_fk'];
+		$send_cid_fk = $sender_data['campsite_fk'];
+		
+		//check for duplicate trade request
+		$duplicateTrade = $db->checkForExistingTrade($uid, $reciever_uid_fk, $send_cid_fk, $recieve_cid_fk);
 
-		//create trade record
-		$tradeReq = $db->createRequest($uid, $tradeStatus, $send_fk, $recieve_fk, $reciever_fk);
-		if($tradeReq !=false) {
-		
-			//trade ok
-			$response["error"] = FALSE;
+		if($duplicateTrade) {
+			//error message
+			$response["error"] = TRUE;
+			$response["error_msg"] = "Duplicate trade!";
 			echo json_encode($response);
-			
 		} else {
-			// trade failed
-            $response["error"] = TRUE;
-            $response["error_msg"] = "Error with trade!";
-            echo json_encode($response);
+
+			//create trade record
+			$tradeReq = $db->createRequest($uid, $tradeStatus, $send_cid_fk, $recieve_cid_fk, $reciever_uid_fk);
+			if($tradeReq) {
+				//trade ok
+				$response["error"] = FALSE;
+				$response["user contact"] = $reciever_data["email"];
+				echo json_encode($response);
+				
+			} else {
+				// trade failed
+				$response["error"] = TRUE;
+				$response["error_msg"] = "Error with trade!";
+				echo json_encode($response);
+			}
+			
+			
+			// include  "class.phpmailer.php";
+			// $msg="Hello! This is a test..."
+			// $mail= new PHPMailer();
+			// $email="dirtymuffin@live.co.uk"; //person who receives your mail
+			// $mail->IsSMTP();
+			// $mail->Host = "127.0.0.1:81";
+			// $mail->SMTPAuth = true; 
+			// $mail->Username = "dirtymuffin@hotmail.co.uk"; //your mail id
+			// $mail->Password = "TH084301"; //password for your mail id
+			// $mail->SetFrom('admin@example.com', 'admin'); //from address
+			// $mail->AddAddress($email);
+			// $mail->Subject ="Test Mail";
+			// $mail->Body = $msg;
+			// $mail->IsHTML(true);
+			// $mail->MsgHTML($msg);
+			// $mail->Send();  
+			
+			
+			//send email alert to owner of site
+			$retval = mail($reciever_email, "Wild Scotland", "You have recieved a trade request!");
+			if($retval == true) {
+				echo "Message sent ok";
+			} else {
+				echo "Message not sent ok";
+			}
 		}
-		
 		
 	
 	} else {
