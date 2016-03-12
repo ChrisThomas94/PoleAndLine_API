@@ -185,26 +185,15 @@ class DB_Functions {
         // check for result 
         $no_of_rows = mysqli_num_rows($result);
 		
-		//echo mysqli_errno($this->db->con);
-		//echo mysqli_error($this->db->con);
-		
-		//echo $no_of_rows;
-		
         if ($no_of_rows > 0) {
 		
             while ($row = $result->fetch_assoc()) {
-			//print_r($row);
-			$new_array[] = $row;
-			
+				$new_array[] = $row;
 			}	
-            
 			return $new_array;
-			//return mysqli_fetch_array($result);
-           
         } else {
             return false;
         }
-		
 	}
 	
 	public function createRequest($uid, $tradeStatus, $send_fk, $recieve_fk, $reciever_fk){
@@ -222,10 +211,10 @@ class DB_Functions {
 	
 	}
 	
-	public function getOwnerOfSite($lat, $lon){
+	public function getOwnerOfSite($cid){
 	
 		//get user id using latlng and relationship
-		$result = mysqli_query($this->db->con, "SELECT user_fk, campsite_fk, email FROM user_has_campsites INNER JOIN users ON user_has_campsites.user_fk = users.unique_uid INNER JOIN campsites ON user_has_campsites.campsite_fk = campsites.unique_cid WHERE (campsites.latitude = '$lat' AND campsites.longitude = '$lon'  AND user_has_campsites.relationship = '90')");
+		$result = mysqli_query($this->db->con, "SELECT user_fk, email FROM user_has_campsites INNER JOIN users ON user_has_campsites.user_fk = users.unique_uid INNER JOIN campsites ON user_has_campsites.campsite_fk = campsites.unique_cid WHERE (campsites.unique_cid = '$cid' AND user_has_campsites.relationship = '90')");
 	
 		if ($result) {
             return mysqli_fetch_array($result);
@@ -235,9 +224,9 @@ class DB_Functions {
 	
 	}
 	
-	public function checkForExistingTrade($uid, $reciever_uid_fk, $send_cid_fk, $recieve_cid_fk){
+	public function checkForExistingTrade($uid, $tradeStatus, $reciever_uid_fk, $send_cid_fk, $recieve_cid_fk){
 	
-		$result = mysqli_query($this->db->con, "SELECT 'unique_tid' FROM trades WHERE (sender_uid_fk = '$uid' AND reciever_uid_fk = '$reciever_uid_fk' AND send_cid_fk = '$send_cid_fk' AND recieve_cid_fk = '$recieve_cid_fk')");
+		$result = mysqli_query($this->db->con, "SELECT 'unique_tid' FROM trades WHERE (status = '$tradeStatus' AND sender_uid_fk = '$uid' AND reciever_uid_fk = '$reciever_uid_fk' AND send_cid_fk = '$send_cid_fk' AND recieve_cid_fk = '$recieve_cid_fk')");
 
 		if ($result) {    
             return mysqli_fetch_array($result);
@@ -246,7 +235,33 @@ class DB_Functions {
         }
 	
 	}
- 
+	
+	public function getActiveTrades($uid, $tradeStatus){
+	
+		$result = mysqli_query($this->db->con, "SELECT * FROM trades WHERE (sender_uid_fk = '$uid' AND status = '$tradeStatus')");
+	
+		$no_of_rows = mysqli_num_rows($result);
+	
+		if ($no_of_rows > 0) {
+            while ($row = $result->fetch_assoc()) {
+				$new_array[] = $row;
+			}	
+			return $new_array;           
+        } else {
+            return false;
+        }
+	} 
+	
+	public function deactivateTrade($tid){
+	
+		$result = mysqli_query($this->db->con, "UPDATE trades SET status = '1' WHERE unique_tid = '$tid'");
+		
+		if($result) {
+			return true;
+		} else {
+			return false;
+		}
+	}
 }
  
 ?>

@@ -226,23 +226,20 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 		//request type is trade request
 		$uid = (isset($decoded['uid']) ? $decoded['uid'] : null);
 		$tradeStatus = (isset($decoded['tradeStatus']) ? $decoded['tradeStatus'] : null);
-		$sendLat = (isset($decoded['sendLat']) ? $decoded['sendLat'] : null);
-		$sendLon = (isset($decoded['sendLon']) ? $decoded['sendLon'] : null);
-		$recieveLat = (isset($decoded['recieveLat']) ? $decoded['recieveLat'] : null);
-		$recieveLon = (isset($decoded['recieveLon']) ? $decoded['recieveLon'] : null);
+		$send_cid = (isset($decoded['send_cid']) ? $decoded['send_cid'] : null);
+		$recieve_cid = (isset($decoded['recieve_cid']) ? $decoded['recieve_cid'] : null);
 		
 		//find owner of site and cid
-		$reciever_data = $db->getOwnerOfSite($recieveLat, $recieveLon);
+		$reciever_data = $db->getOwnerOfSite($recieve_cid);
 		$reciever_uid_fk = $reciever_data['user_fk'];
-		$recieve_cid_fk = $reciever_data['campsite_fk'];
 		$reciever_email = $reciever_data['email'];
 		
 		//find campsite of sender
-		$sender_data = $db->getOwnerOfSite($sendLat, $sendLon);
-		$send_cid_fk = $sender_data['campsite_fk'];
+		//$sender_data = $db->getOwnerOfSite($sendLat, $sendLon);
+		//$send_cid_fk = $sender_data['campsite_fk'];
 		
 		//check for duplicate trade request
-		$duplicateTrade = $db->checkForExistingTrade($uid, $reciever_uid_fk, $send_cid_fk, $recieve_cid_fk);
+		$duplicateTrade = $db->checkForExistingTrade($uid, $tradeStatus, $reciever_uid_fk, $send_cid, $recieve_cid);
 
 		if($duplicateTrade) {
 			//error message
@@ -252,7 +249,7 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 		} else {
 
 			//create trade record
-			$tradeReq = $db->createRequest($uid, $tradeStatus, $send_cid_fk, $recieve_cid_fk, $reciever_uid_fk);
+			$tradeReq = $db->createRequest($uid, $tradeStatus, $send_cid, $recieve_cid, $reciever_uid_fk);
 			if($tradeReq) {
 				//trade ok
 				$response["error"] = FALSE;
@@ -265,7 +262,6 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 				$response["error_msg"] = "Error with trade!";
 				echo json_encode($response);
 			}
-			
 			
 			// include  "class.phpmailer.php";
 			// $msg="Hello! This is a test..."
@@ -284,16 +280,55 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 			// $mail->MsgHTML($msg);
 			// $mail->Send();  
 			
-			
 			//send email alert to owner of site
-			$retval = mail($reciever_email, "Wild Scotland", "You have recieved a trade request!");
-			if($retval == true) {
-				echo "Message sent ok";
-			} else {
-				echo "Message not sent ok";
-			}
+			// $retval = mail($reciever_email, "Wild Scotland", "You have recieved a trade request!");
+			// if($retval == true) {
+				// echo "Message sent ok";
+			// } else {
+				// echo "Message not sent ok";
+			// }
 		}
 		
+	
+	} else if ($tag == 'activeTrades') {
+	
+		$uid = (isset($decoded['uid']) ? $decoded['uid'] : null);
+		$tradeStatus = (isset($decoded['tradeStatus']) ? $decoded['tradeStatus'] : null);
+		
+		$data = $db->getActiveTrades($uid, $tradeStatus);
+		
+		$size = sizeof($data);
+		
+		if($data) {
+			// trades found
+            $response["error"] = FALSE;
+			$response["size"] = $size;
+			for($i = 0; $i<$size; $i++){
+				$response["trade$i"] = $data[$i];
+			}
+            echo json_encode($response);
+		} else {
+			$response["error"] = TRUE;
+			$response["error_msg"] = "Error with fetching trades!";
+			echo json_encode($response);
+		}
+	
+	} else if($tag == 'cancelTrade') {
+	
+		$tid = (isset($decoded['tid']) ? $decoded['tid'] : null);
+		
+		$data = $db->deactivateTrade($tid);
+		
+		if($data) {
+			// trades found
+            $response["error"] = FALSE;
+
+            echo json_encode($response);
+		} else {
+			$response["error"] = TRUE;
+			$response["error_msg"] = "Error with canceling trade!!";
+			echo json_encode($response);
+		}
 	
 	} else {
         // request failed
