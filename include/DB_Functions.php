@@ -238,7 +238,7 @@ class DB_Functions {
 	
 	public function getActiveTrades($uid, $tradeStatus){
 	
-		$result = mysqli_query($this->db->con, "SELECT * FROM trades WHERE (sender_uid_fk = '$uid' AND status = '$tradeStatus')");
+		$result = mysqli_query($this->db->con, "SELECT * FROM trades WHERE ((sender_uid_fk = '$uid' OR reciever_uid_fk = '$uid') AND status = '$tradeStatus')");
 	
 		$no_of_rows = mysqli_num_rows($result);
 	
@@ -255,6 +255,17 @@ class DB_Functions {
 	public function deactivateTrade($tid){
 	
 		$result = mysqli_query($this->db->con, "UPDATE trades SET status = '1' WHERE unique_tid = '$tid'");
+		
+		if($result) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+		public function confirmTrade($tid){
+	
+		$result = mysqli_query($this->db->con, "UPDATE trades SET status = '2' WHERE unique_tid = '$tid'");
 		
 		if($result) {
 			return true;
