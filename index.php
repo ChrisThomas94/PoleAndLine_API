@@ -116,7 +116,7 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
             echo json_encode($response);
         } else {
 			//store site
-			$site = $db->storeSite($lat, $lon, $title, $description, $rating, $feature1, $feature2, $feature3, $feature4, $feature5, $feature6, $feature7, $feature8, $feature9, $feature10);
+			$site = $db->storeSite($uid, $lat, $lon, $title, $description, $rating, $feature1, $feature2, $feature3, $feature4, $feature5, $feature6, $feature7, $feature8, $feature9, $feature10);
 			
 			$ucid = $site["unique_cid"];
 			
@@ -124,6 +124,7 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 				//site stored successfully
 				$response["error"] = FALSE;
 				$response["cid"] = $site["unique_cid"];
+				$response["site"]["site_admin"] = $site["site_admin"];
 				$response["site"]["lat"] = $site["latitude"];
 				$response["site"]["lon"] = $site["longitude"];
 				$response["site"]["title"] = $site["title"];
@@ -146,7 +147,7 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 			} else {
 				//site failed to store
 				$response["error"] = TRUE;
-				$response["error_msg"] = "Error occured in Registartion";
+				$response["error_msg"] = "Error occured in storing site!";
 				echo json_encode($response);
 			}
 			
@@ -162,7 +163,7 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 			} else {
 				//link failed to be made
 				$response["error"] = TRUE;
-				$response["error_msg"] = "Error occured in linking";
+				$response["error_msg"] = "Error occured in linking site to user!";
 				echo json_encode($response);
 			}
 			
@@ -313,11 +314,50 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 			echo json_encode($response);
 		}
 	
-	} else if($tag == 'cancelTrade') {
+	} else if($tag == 'updateTrade') {
 	
 		$tid = (isset($decoded['tid']) ? $decoded['tid'] : null);
+		$tradeStatus = (isset($decoded['tradeStatus']) ? $decoded['tradeStatus'] : null);
+		$sender_uid = (isset($decoded['sender_uid']) ? $decoded['sender_uid'] : null);
+		$receiver_uid = (isset($decoded['receiver_uid']) ? $decoded['receiver_uid'] : null);
+		$send_cid = (isset($decoded['send_cid']) ? $decoded['send_cid'] : null);
+		$receive_cid = (isset($decoded['receive_cid']) ? $decoded['receive_cid'] : null);
 		
-		$data = $db->deactivateTrade($tid);
+		$relat = 45;
+		
+		if($tradeStatus == 2){
+		
+			$linkSender = $db->linkSiteToOwner($sender_uid, $receive_cid, $relat);
+			$linkReceiver = $db->linkSiteToOwner($receiver_uid, $send_cid, $relat);
+			
+			if ($linkSender) {
+				//link made successfully
+				$responseLinkSend["error"] = FALSE;
+				$responseLinkSend["oid"] = $linkSender["unique_oid"];
+				echo json_encode($responseLinkSend);
+				
+			} else {
+				//link failed to be made
+				$response["error"] = TRUE;
+				$response["error_msg"] = "Error occured in linking sender";
+				echo json_encode($response);
+			}
+			
+			if ($linkReceiver) {
+				//link made successfully
+				$responseLinkRec["error"] = FALSE;
+				$responseLinkRec["oid"] = $linkReceiver["unique_oid"];
+				echo json_encode($responseLinkRec);
+				
+			} else {
+				//link failed to be made
+				$response["error"] = TRUE;
+				$response["error_msg"] = "Error occured in linking sender";
+				echo json_encode($response);
+			}
+		}
+		
+		$data = $db->updateTrade($tid, $tradeStatus);
 		
 		if($data) {
 			// trades found
@@ -326,10 +366,28 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
             echo json_encode($response);
 		} else {
 			$response["error"] = TRUE;
-			$response["error_msg"] = "Error with canceling trade!!";
+			$response["error_msg"] = "Error with trade update!";
 			echo json_encode($response);
 		}
 	
+	} else if ($tag == 'deleteSite'){
+		
+		$cid = (isset($decoded['cid']) ? $decoded['cid'] : null);
+		$active = (isset($decoded['active']) ? $decoded['active'] : null);
+		
+		$data = $db->deleteSite($cid, $active);
+		
+		if($data) {
+			// trades found
+            $response["error"] = FALSE;
+
+            echo json_encode($response);
+		} else {
+			$response["error"] = TRUE;
+			$response["error_msg"] = "Error with site deletion!";
+			echo json_encode($response);
+		}
+		
 	} else {
         // request failed
         $response["error"] = TRUE;

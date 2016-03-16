@@ -101,9 +101,9 @@ class DB_Functions {
         return $hash;
     }
 	
-	public function storeSite($lat, $lon, $title, $description, $rating, $feature1, $feature2, $feature3, $feature4, $feature5, $feature6, $feature7, $feature8, $feature9, $feature10){
+	public function storeSite($uid, $lat, $lon, $title, $description, $rating, $feature1, $feature2, $feature3, $feature4, $feature5, $feature6, $feature7, $feature8, $feature9, $feature10){
 		$ucid = uniqid('', true);
-        $result = mysqli_query($this->db->con,"INSERT INTO campsites(unique_cid, latitude, longitude, title, description, rating, created_at, feature1, feature2, feature3, feature4, feature5, feature6, feature7, feature8, feature9, feature10) VALUES('$ucid', '$lat', '$lon', '$title', '$description', '$rating', NOW(), $feature1, $feature2, $feature3, $feature4, $feature5, $feature6, $feature7, $feature8, $feature9, $feature10)");
+        $result = mysqli_query($this->db->con,"INSERT INTO campsites(unique_cid, site_admin, latitude, longitude, title, description, rating, created_at, feature1, feature2, feature3, feature4, feature5, feature6, feature7, feature8, feature9, feature10, active) VALUES('$ucid', '$uid', '$lat', '$lon', '$title', '$description', '$rating', NOW(), $feature1, $feature2, $feature3, $feature4, $feature5, $feature6, $feature7, $feature8, $feature9, $feature10, '1')");
 		
         // check for result
         if ($result) {
@@ -135,7 +135,7 @@ class DB_Functions {
 	
 	public function linkSiteToOwner($uid, $ucid, $relat){
 		$uoid = uniqid('', true);
-		$JNCT = mysqli_query($this->db->con,"INSERT INTO user_has_campsites(unique_oid, user_fk, campsite_fk, relationship, created_at) VALUES('$uoid', '$uid', '$ucid', '$relat', NOW())");
+		$JNCT = mysqli_query($this->db->con,"INSERT INTO user_has_campsites(unique_oid, user_fk, campsite_fk, relationship, created_at, active) VALUES('$uoid', '$uid', '$ucid', '$relat', NOW(), '1')");
 		// check for result
         if ($JNCT) {
             // gettig the details
@@ -151,7 +151,7 @@ class DB_Functions {
 	
 	public function fetchSites($uid, $relat){
 		
-		$result = mysqli_query($this->db->con, "SELECT * FROM campsites INNER JOIN user_has_campsites ON user_has_campsites.campsite_fk = campsites.unique_cid INNER JOIN users ON users.unique_uid = user_has_campsites.user_fk WHERE user_has_campsites.relationship = '$relat' AND users.unique_uid = '$uid'");
+		$result = mysqli_query($this->db->con, "SELECT * FROM campsites INNER JOIN user_has_campsites ON user_has_campsites.campsite_fk = campsites.unique_cid INNER JOIN users ON users.unique_uid = user_has_campsites.user_fk WHERE user_has_campsites.user_fk = '$uid' AND user_has_campsites.active = '1' AND campsites.active = '1'");
 		
         // check for result 
         $no_of_rows = mysqli_num_rows($result);
@@ -180,7 +180,7 @@ class DB_Functions {
 	
 	public function fetchUnknownSites($uid, $relatOwn, $relatTrade){
 		
-		$result = mysqli_query($this->db->con, "SELECT * FROM campsites INNER JOIN user_has_campsites ON user_has_campsites.campsite_fk = campsites.unique_cid INNER JOIN users ON users.unique_uid = user_has_campsites.user_fk WHERE (user_has_campsites.relationship = '$relatOwn' OR user_has_campsites.relationship = '$relatTrade') AND users.unique_uid != '$uid'");
+		$result = mysqli_query($this->db->con, "SELECT * FROM campsites INNER JOIN user_has_campsites ON user_has_campsites.campsite_fk = campsites.unique_cid INNER JOIN users ON users.unique_uid = user_has_campsites.user_fk WHERE ((user_has_campsites.user_fk != '$uid' AND user_has_campsites.relationship = '90') OR (user_has_campsites.user_fk != '$uid' AND user_has_campsites.relationship != '45')) AND user_has_campsites.active = '1' AND campsites.active = '1'");
 		
         // check for result 
         $no_of_rows = mysqli_num_rows($result);
@@ -252,9 +252,9 @@ class DB_Functions {
         }
 	} 
 	
-	public function deactivateTrade($tid){
+	public function updateTrade($tid, $tradeStatus){
 	
-		$result = mysqli_query($this->db->con, "UPDATE trades SET status = '1' WHERE unique_tid = '$tid'");
+		$result = mysqli_query($this->db->con, "UPDATE trades SET status = '$tradeStatus' WHERE unique_tid = '$tid'");
 		
 		if($result) {
 			return true;
@@ -263,15 +263,16 @@ class DB_Functions {
 		}
 	}
 	
-		public function confirmTrade($tid){
+	public function deleteSite($cid, $active){
 	
-		$result = mysqli_query($this->db->con, "UPDATE trades SET status = '2' WHERE unique_tid = '$tid'");
-		
+		$result = mysqli_query($this->db->con, "UPDATE campsites SET active = '$active' WHERE unique_cid = '$cid'");
+	
 		if($result) {
 			return true;
 		} else {
 			return false;
 		}
+	
 	}
 }
  
