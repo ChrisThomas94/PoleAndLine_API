@@ -101,9 +101,9 @@ class DB_Functions {
         return $hash;
     }
 	
-	public function storeSite($uid, $lat, $lon, $title, $description, $rating, $feature1, $feature2, $feature3, $feature4, $feature5, $feature6, $feature7, $feature8, $feature9, $feature10){
+	public function storeSite($uid, $lat, $lon, $title, $description, $rating, $feature1, $feature2, $feature3, $feature4, $feature5, $feature6, $feature7, $feature8, $feature9, $feature10, $image){
 		$ucid = uniqid('', true);
-        $result = mysqli_query($this->db->con,"INSERT INTO campsites(unique_cid, site_admin, latitude, longitude, title, description, rating, created_at, feature1, feature2, feature3, feature4, feature5, feature6, feature7, feature8, feature9, feature10, active) VALUES('$ucid', '$uid', '$lat', '$lon', '$title', '$description', '$rating', NOW(), $feature1, $feature2, $feature3, $feature4, $feature5, $feature6, $feature7, $feature8, $feature9, $feature10, '1')");
+        $result = mysqli_query($this->db->con,"INSERT INTO campsites(unique_cid, site_admin, latitude, longitude, title, description, rating, created_at, feature1, feature2, feature3, feature4, feature5, feature6, feature7, feature8, feature9, feature10, active, image) VALUES('$ucid', '$uid', '$lat', '$lon', '$title', '$description', '$rating', NOW(), $feature1, $feature2, $feature3, $feature4, $feature5, $feature6, $feature7, $feature8, $feature9, $feature10, '1', '$image')");
 		
         // check for result
         if ($result) {
@@ -162,20 +162,17 @@ class DB_Functions {
 		//echo $no_of_rows;
 		
         if ($no_of_rows > 0) {
-		
             while ($row = $result->fetch_assoc()) {
 			//print_r($row);
 			$new_array[] = $row;
-			
 			}	
-            
 			return $new_array;
 			//return mysqli_fetch_array($result);
-           
-        } else {
+        } else if ($no_of_rows == 0) {
+			return true;
+		} else {
             return false;
         }
-		
 	}
 	
 	public function fetchUnknownSites($uid, $relatOwn, $relatTrade){
@@ -191,7 +188,9 @@ class DB_Functions {
 				$new_array[] = $row;
 			}	
 			return $new_array;
-        } else {
+        } else if ($no_of_rows == 0){
+			return true;
+		} else {
             return false;
         }
 	}
@@ -247,7 +246,9 @@ class DB_Functions {
 				$new_array[] = $row;
 			}	
 			return $new_array;           
-        } else {
+        } else if ($no_of_rows == 0) {
+			return true;
+		} else {
             return false;
         }
 	} 

@@ -107,6 +107,8 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 		$feature8 = (isset($decoded['feature8']) ? $decoded['feature8'] : null);
 		$feature9 = (isset($decoded['feature9']) ? $decoded['feature9'] : null);
 		$feature10 = (isset($decoded['feature10']) ? $decoded['feature10'] : null);
+		$image = (isset($decoded['image']) ? $decoded['image'] : null);
+
 		
 		//checks go here
 		if ($db->nearbySiteExist($lat, $lon)) {
@@ -116,7 +118,7 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
             echo json_encode($response);
         } else {
 			//store site
-			$site = $db->storeSite($uid, $lat, $lon, $title, $description, $rating, $feature1, $feature2, $feature3, $feature4, $feature5, $feature6, $feature7, $feature8, $feature9, $feature10);
+			$site = $db->storeSite($uid, $lat, $lon, $title, $description, $rating, $feature1, $feature2, $feature3, $feature4, $feature5, $feature6, $feature7, $feature8, $feature9, $feature10, $image);
 			
 			$ucid = $site["unique_cid"];
 			
@@ -178,7 +180,12 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 		//get sites
 		$known = $db->fetchSites($uid, $relat);
 		$size = sizeof($known);
-        if ($known != false) {
+		
+        if($known[0] == null){
+			$response["error"] = FALSE;
+			$response["size"] = 0;
+			echo json_encode($response);
+		} else if ($known) {
             // site found
             $response["error"] = FALSE;
 			$response["size"] = $size;
@@ -205,7 +212,12 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 		//get sites
 		$unknown = $db->fetchUnknownSites($uid, $relatOwn, $relatTrade);
 		$size = sizeof($unknown);
-        if ($unknown != false) {
+        
+		if($unknown[0] == null){
+			$response["error"] = FALSE;
+			$response["size"] = 0;
+			echo json_encode($response);
+		} else if ($unknown) {
             // site found
             $response["error"] = FALSE;
 			$response["size"] = $size;
@@ -300,7 +312,11 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 		
 		$size = sizeof($data);
 		
-		if($data) {
+		if($data[0] == null){
+			$response["error"] = FALSE;
+			$response["size"] = 0;
+			echo json_encode($response);
+		} else if($data) {
 			// trades found
             $response["error"] = FALSE;
 			$response["size"] = $size;
