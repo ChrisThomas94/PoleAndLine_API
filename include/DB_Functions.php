@@ -101,9 +101,9 @@ class DB_Functions {
         return $hash;
     }
 	
-	public function storeSite($uid, $lat, $lon, $title, $description, $rating, $feature1, $feature2, $feature3, $feature4, $feature5, $feature6, $feature7, $feature8, $feature9, $feature10, $image){
+	public function storeSite($uid, $lat, $lon, $title, $description, $rating, $feature1, $feature2, $feature3, $feature4, $feature5, $feature6, $feature7, $feature8, $feature9, $feature10){
 		$ucid = uniqid('', true);
-        $result = mysqli_query($this->db->con,"INSERT INTO campsites(unique_cid, site_admin, latitude, longitude, title, description, rating, created_at, feature1, feature2, feature3, feature4, feature5, feature6, feature7, feature8, feature9, feature10, active, image) VALUES('$ucid', '$uid', '$lat', '$lon', '$title', '$description', '$rating', NOW(), $feature1, $feature2, $feature3, $feature4, $feature5, $feature6, $feature7, $feature8, $feature9, $feature10, '1', '$image')");
+        $result = mysqli_query($this->db->con,"INSERT INTO campsites(unique_cid, site_admin, latitude, longitude, title, description, rating, created_at, feature1, feature2, feature3, feature4, feature5, feature6, feature7, feature8, feature9, feature10, active) VALUES('$ucid', '$uid', '$lat', '$lon', '$title', '$description', '$rating', NOW(), $feature1, $feature2, $feature3, $feature4, $feature5, $feature6, $feature7, $feature8, $feature9, $feature10, '1')");
 		
         // check for result
         if ($result) {
@@ -273,6 +273,62 @@ class DB_Functions {
 		} else {
 			return false;
 		}
+	
+	}
+	
+	public function addImage($image, $cid){
+	
+		$uiid = uniqid('', true);
+	
+		$result = mysqli_query($this->db->con, "INSERT INTO images_of_campsites (active, unique_id, image, campsite_fk, uploaded_at) VALUES ('1', '$uiid', '$image', '$cid', NOW())");
+	
+		if($result) {
+			return true;
+		} else {
+			return false;
+		}
+	
+	}
+	
+	public function fetchImages($uid){
+
+		$result = mysqli_query($this->db->con, "SELECT * FROM images_of_campsites INNER JOIN user_has_campsites ON user_has_campsites.campsite_fk = images_of_campsites.campsite_fk WHERE user_has_campsites.user_fk = '$uid'");
+	
+		// check for result 
+        $no_of_rows = mysqli_num_rows($result);
+		
+        if ($no_of_rows > 0) {
+		
+            while ($row = $result->fetch_assoc()) {
+				$new_array[] = $row;
+			}	
+			return $new_array;
+        } else if ($no_of_rows == 0){
+			return true;
+		} else {
+            return false;
+        }
+	
+	}
+	
+	public function fetchImagesCid($cid){
+
+		$result = mysqli_query($this->db->con, "SELECT * FROM images_of_campsites WHERE campsite_fk = '$cid'");
+	
+		// check for result 
+        $no_of_rows = mysqli_num_rows($result);
+		
+        if ($no_of_rows > 0) {
+		
+            while ($row = $result->fetch_assoc()) {
+				$new_array[] = $row;
+			}	
+			return $new_array;
+        } else if ($no_of_rows == 0){
+			return true;
+		} else {
+            return false;
+        }
 	
 	}
 }

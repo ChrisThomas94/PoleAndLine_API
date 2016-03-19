@@ -118,9 +118,15 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
             echo json_encode($response);
         } else {
 			//store site
-			$site = $db->storeSite($uid, $lat, $lon, $title, $description, $rating, $feature1, $feature2, $feature3, $feature4, $feature5, $feature6, $feature7, $feature8, $feature9, $feature10, $image);
+			$site = $db->storeSite($uid, $lat, $lon, $title, $description, $rating, $feature1, $feature2, $feature3, $feature4, $feature5, $feature6, $feature7, $feature8, $feature9, $feature10);
 			
 			$ucid = $site["unique_cid"];
+			
+			if($image){
+				
+				$data = $db->addImage($image, $ucid);
+				
+			}
 			
 			if ($site) {
 				//site stored successfully
@@ -144,7 +150,8 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 				$response["site"]["feature10"] = $site["feature10"];
 				$response["site"]["created_at"] = $site["created_at"];
 				$response["site"]["updated_at"] = $site["updated_at"];
-				$response["site"]["image"] = $site["image"];
+				$response["site"]["image"] = $data["image"];
+
 				echo json_encode($response);
 				
 			} else {
@@ -182,10 +189,9 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 		$known = $db->fetchSites($uid, $relat);
 		$size = sizeof($known);
 		
-        if($known[0] == null){
+		if($known[0] == null){
 			$response["error"] = FALSE;
 			$response["size"] = 0;
-			echo json_encode($response);
 		} else if ($known) {
             // site found
             $response["error"] = FALSE;
@@ -193,7 +199,6 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 			for($i = 0; $i<$size; $i++){
 				$response["site$i"] = $known[$i];
 			}
-            echo json_encode($response);
         } else {
             // site not found
             // echo json with error = 1
@@ -201,6 +206,30 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
             $response["error_msg"] = "Error fetching known sites!!";
             echo json_encode($response);
         }
+		
+		//get images
+				
+		$images = $db->fetchImages($uid);
+		
+		$sizeImages = sizeof($images);
+		
+		if ($images) {
+           //site found
+            $response["error"] = FALSE;
+			$response["sizeImages"] = $sizeImages;
+			for($i = 0; $i<$sizeImages; $i++){
+				$response["image$i"] = $images[$i];
+			}
+            echo json_encode($response);
+        } else {
+            //site not found
+            //echo json with error = 1
+            $response["error"] = TRUE;
+            $response["error_msg"] = "Error fetching Images!!";
+            echo json_encode($response);
+        }
+		
+
 		
 			
 	} else if ($tag == 'unknownSites') {
@@ -407,8 +436,21 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 		
 	} else if ($tag == 'uploadImage') {
 	
-		$response["msg"] = "holy shit it worked";
-		echo json_encode($response);
+		$image = (isset($decoded['image']) ? $decoded['image'] : null);
+		$cid = (isset($decoded['cid']) ? $decoded['cid'] : null);
+		
+		$data = $db->addImage($image, $cid);
+	
+		if($data) {
+			$response["error"] = FALSE;
+			
+			echo json_encode($response);
+		} else {
+			$response["error"] = TRUE;
+			$response["error_msg"] = "Error uploading image!";
+			echo json_encode($response);
+		}
+
 	
 	} else {
         // request failed
