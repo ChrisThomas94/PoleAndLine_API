@@ -88,7 +88,7 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
             }
         }
     } else if ($tag == 'addSite') {
-	
+		
 		//request type is add site
 		$uid = (isset($decoded['uid']) ? $decoded['uid'] : null);
 		$relat = (isset($decoded['relat']) ? $decoded['relat'] : null);
@@ -144,6 +144,7 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 				$response["site"]["feature10"] = $site["feature10"];
 				$response["site"]["created_at"] = $site["created_at"];
 				$response["site"]["updated_at"] = $site["updated_at"];
+				$response["site"]["image"] = $site["image"];
 				echo json_encode($response);
 				
 			} else {
@@ -404,6 +405,11 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 			echo json_encode($response);
 		}
 		
+	} else if ($tag == 'uploadImage') {
+	
+		$response["msg"] = "holy shit it worked";
+		echo json_encode($response);
+	
 	} else {
         // request failed
         $response["error"] = TRUE;
@@ -414,6 +420,7 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 } else {
     $response["error"] = TRUE;
     $response["error_msg"] = "Required parameter 'tag' is missing!";
+	$response["content"] = $decoded['tag'];
     echo json_encode($response);
 }
 ?>
