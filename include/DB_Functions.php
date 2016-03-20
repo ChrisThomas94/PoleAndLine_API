@@ -292,7 +292,7 @@ class DB_Functions {
 	
 	public function fetchImages($uid){
 
-		$result = mysqli_query($this->db->con, "SELECT * FROM images_of_campsites INNER JOIN user_has_campsites ON user_has_campsites.campsite_fk = images_of_campsites.campsite_fk WHERE user_has_campsites.user_fk = '$uid'");
+		$result = mysqli_query($this->db->con, "SELECT * FROM images_of_campsites INNER JOIN user_has_campsites ON user_has_campsites.campsite_fk = images_of_campsites.campsite_fk WHERE user_has_campsites.user_fk = '$uid' AND images_of_campsites.active = '1' AND user_has_campsites.active = '1'");
 	
 		// check for result 
         $no_of_rows = mysqli_num_rows($result);
@@ -329,6 +329,18 @@ class DB_Functions {
 		} else {
             return false;
         }
+	
+	}
+	
+	public function updateSite($active, $cid, $title, $description, $rating, $feature1, $feature2, $feature3, $feature4, $feature5, $feature6, $feature7, $feature8, $feature9, $feature10){
+	
+		$result = mysqli_query($this->db->con, "UPDATE campsites SET title = '$title', description = '$description', rating = '$rating', updated_at = NOW(), feature1 = $feature1, feature2 = $feature2, feature3 = $feature3, feature4 = $feature4, feature5 = $feature5, feature6 = $feature6, feature7 = $feature7, feature8 = $feature8, feature9 = $feature9, feature10 = $feature10  WHERE unique_cid = '$cid'");
+	
+		if($result) {
+			return true;
+		} else {
+			return false;
+		}
 	
 	}
 }

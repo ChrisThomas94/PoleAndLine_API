@@ -434,6 +434,61 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 			echo json_encode($response);
 		}
 		
+	} else if($tag == 'updateSite') {
+	
+		$active = (isset($decoded['active']) ? $decoded['active'] : null);
+		$cid = (isset($decoded['cid']) ? $decoded['cid'] : null);
+		$title = (isset($decoded['title']) ? $decoded['title'] : null);
+		$description = (isset($decoded['description']) ? $decoded['description'] : null);
+		$rating = (isset($decoded['rating']) ? $decoded['rating'] : null);
+		$feature1 = (isset($decoded['feature1']) ? $decoded['feature1'] : null);
+		$feature2 = (isset($decoded['feature2']) ? $decoded['feature2'] : null);
+		$feature3 = (isset($decoded['feature3']) ? $decoded['feature3'] : null);
+		$feature4 = (isset($decoded['feature4']) ? $decoded['feature4'] : null);
+		$feature5 = (isset($decoded['feature5']) ? $decoded['feature5'] : null);
+		$feature6 = (isset($decoded['feature6']) ? $decoded['feature6'] : null);
+		$feature7 = (isset($decoded['feature7']) ? $decoded['feature7'] : null);
+		$feature8 = (isset($decoded['feature8']) ? $decoded['feature8'] : null);
+		$feature9 = (isset($decoded['feature9']) ? $decoded['feature9'] : null);
+		$feature10 = (isset($decoded['feature10']) ? $decoded['feature10'] : null);
+		$image = (isset($decoded['image']) ? $decoded['image'] : null);
+
+		//update site
+		$site = $db->updateSite($active, $cid, $title, $description, $rating, $feature1, $feature2, $feature3, $feature4, $feature5, $feature6, $feature7, $feature8, $feature9, $feature10);
+		
+		if($image){
+			$data = $db->addImage($image, $cid);	
+		}
+		
+		if ($site) {
+			//site stored successfully
+			$response["error"] = FALSE;
+			$response["cid"] = $site["unique_cid"];
+			$response["site"]["title"] = $site["title"];
+			$response["site"]["description"] = $site["description"];
+			$response["site"]["rating"] = $site["rating"];
+			$response["site"]["feature1"] = $site["feature1"];
+			$response["site"]["feature2"] = $site["feature2"];
+			$response["site"]["feature3"] = $site["feature3"];
+			$response["site"]["feature4"] = $site["feature4"];
+			$response["site"]["feature5"] = $site["feature5"];
+			$response["site"]["feature6"] = $site["feature6"];
+			$response["site"]["feature7"] = $site["feature7"];
+			$response["site"]["feature8"] = $site["feature8"];
+			$response["site"]["feature9"] = $site["feature9"];
+			$response["site"]["feature10"] = $site["feature10"];
+			$response["site"]["updated_at"] = $site["updated_at"];
+			$response["site"]["image"] = $data["image"];
+
+			echo json_encode($response);
+				
+		} else {
+			//site failed to store
+			$response["error"] = TRUE;
+			$response["error_msg"] = "Error occured in updating site!";
+			echo json_encode($response);
+		}
+		
 	} else if ($tag == 'uploadImage') {
 	
 		$image = (isset($decoded['image']) ? $decoded['image'] : null);
