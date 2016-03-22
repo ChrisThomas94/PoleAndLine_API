@@ -349,6 +349,21 @@ class DB_Functions {
 		}
 	
 	}
+	
+	public function checkPopularity($cid){
+	
+		$result = mysqli_query($this->db->con, "SELECT * FROM user_has_campsites WHERE campsite_fk = '$cid' AND active = '1'");
+	
+		// check for result 
+        $no_of_rows = mysqli_num_rows($result);
+		
+        if ($no_of_rows > 0) {
+	
+			return $no_of_rows;
+        } else {
+            return false;
+        }
+	}
 }
  
 ?>

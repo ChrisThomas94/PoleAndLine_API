@@ -263,7 +263,10 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
             $response["error"] = FALSE;
 			$response["size"] = $size;
 			for($i = 0; $i<$size; $i++){
-				$response["site$i"] = $unknown[$i];
+				$pop = $db->checkPopularity($unknown[$i]['unique_cid']);
+				
+				$response["site$i"]["pop"] = $pop;
+				$response["site$i"]["details"] = $unknown[$i];
 			}
             echo json_encode($response);
         } else {
