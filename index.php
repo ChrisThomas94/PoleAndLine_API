@@ -91,6 +91,7 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 		
 		//request type is add site
 		$uid = (isset($decoded['uid']) ? $decoded['uid'] : null);
+		$email = (isset($decoded['email']) ? $decoded['email'] : null);
 		$relat = (isset($decoded['relat']) ? $decoded['relat'] : null);
 		$lat = (isset($decoded['lat']) ? $decoded['lat'] : null);
 		$lon = (isset($decoded['lon']) ? $decoded['lon'] : null);
@@ -108,29 +109,30 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 		$feature9 = (isset($decoded['feature9']) ? $decoded['feature9'] : null);
 		$feature10 = (isset($decoded['feature10']) ? $decoded['feature10'] : null);
 		$image = (isset($decoded['image']) ? $decoded['image'] : null);
+		$latLowerBound = (isset($decoded['latLowerBound']) ? $decoded['latLowerBound'] : null);
+		$latUpperBound = (isset($decoded['latUpperBound']) ? $decoded['latUpperBound'] : null);
+		$lonLowerBound = (isset($decoded['lonLowerBound']) ? $decoded['lonLowerBound'] : null);
+		$lonUpperBound = (isset($decoded['lonUpperBound']) ? $decoded['lonUpperBound'] : null);
 
-		
-		//checks go here
-		if ($db->nearbySiteExist($lat, $lon)) {
-            // user is already existed - error response
-            $response["error"] = TRUE;
-            $response["error_msg"] = "Nearby sites exist";
-            echo json_encode($response);
-        } else {
+		//check for nearby sites
+		$nearby = $db->nearbySiteExist($lat, $lon, $latLowerBound, $latUpperBound, $lonLowerBound, $lonUpperBound);
+		$size = sizeof($nearby);
+        
+		if($nearby[0] == null) {
+			$response["error"] = FALSE;
+			$response["size"] = 0;
+				
 			//store site
-			$site = $db->storeSite($uid, $lat, $lon, $title, $description, $rating, $feature1, $feature2, $feature3, $feature4, $feature5, $feature6, $feature7, $feature8, $feature9, $feature10);
+			$site = $db->storeSite($email, $lat, $lon, $title, $description, $rating, $feature1, $feature2, $feature3, $feature4, $feature5, $feature6, $feature7, $feature8, $feature9, $feature10);
 			
 			$ucid = $site["unique_cid"];
 			
 			if($image){
-				
 				$data = $db->addImage($image, $ucid);
-				
 			}
 			
 			if ($site) {
 				//site stored successfully
-				$response["error"] = FALSE;
 				$response["cid"] = $site["unique_cid"];
 				$response["site"]["site_admin"] = $site["site_admin"];
 				$response["site"]["lat"] = $site["latitude"];
@@ -177,7 +179,16 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 				echo json_encode($response);
 			}
 			
-		}
+		} else if ($size > 0) {
+            // site found
+            $response["error"] = TRUE;
+			$response["error_msg"] = "Existing Site Nearby!";
+			$response["size"] = $size;
+			for($i = 0; $i<$size; $i++){
+				$response["site$i"] = $nearby[$i];
+			}
+            echo json_encode($response);
+        }
 		
 	} else if ($tag == 'knownSites') {
 	

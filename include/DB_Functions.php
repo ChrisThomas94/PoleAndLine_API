@@ -101,9 +101,9 @@ class DB_Functions {
         return $hash;
     }
 	
-	public function storeSite($uid, $lat, $lon, $title, $description, $rating, $feature1, $feature2, $feature3, $feature4, $feature5, $feature6, $feature7, $feature8, $feature9, $feature10){
+	public function storeSite($email, $lat, $lon, $title, $description, $rating, $feature1, $feature2, $feature3, $feature4, $feature5, $feature6, $feature7, $feature8, $feature9, $feature10){
 		$ucid = uniqid('', true);
-        $result = mysqli_query($this->db->con,"INSERT INTO campsites(unique_cid, site_admin, latitude, longitude, title, description, rating, created_at, feature1, feature2, feature3, feature4, feature5, feature6, feature7, feature8, feature9, feature10, active) VALUES('$ucid', '$uid', '$lat', '$lon', '$title', '$description', '$rating', NOW(), $feature1, $feature2, $feature3, $feature4, $feature5, $feature6, $feature7, $feature8, $feature9, $feature10, '1')");
+        $result = mysqli_query($this->db->con,"INSERT INTO campsites(unique_cid, site_admin, latitude, longitude, title, description, rating, created_at, feature1, feature2, feature3, feature4, feature5, feature6, feature7, feature8, feature9, feature10, active) VALUES('$ucid', '$email', '$lat', '$lon', '$title', '$description', '$rating', NOW(), $feature1, $feature2, $feature3, $feature4, $feature5, $feature6, $feature7, $feature8, $feature9, $feature10, '1')");
 		
         // check for result
         if ($result) {
@@ -118,18 +118,22 @@ class DB_Functions {
         }
 	}
 	
-	public function nearbySiteExist($lat, $lon){
+	public function nearbySiteExist($lat, $lon, $latLowerBound, $latUpperBound, $lonLowerBound, $lonUpperBound){
 			
-		$distLat = $lat+0.0001;
-		$distLon = $lon+0.0001;
-		$result = mysqli_query($this->db->con,"SELECT unique_cid from campsites WHERE (latitude >= $lat AND latitude <= '$distLat') AND (longitude >= $lon AND longitude <= '$distLon')");
+		$distLatUp = $lat+0.001;
+		$distLonRight = $lon+0.001;
+		$distLatDown = $lat-0.001;
+		$distLonLeft = $lon-0.001;
+		$result = mysqli_query($this->db->con, "SELECT unique_cid from campsites WHERE ( latitude >= '$latLowerBound' AND latitude <= '$latUpperBound') AND ( longitude <= '$lonUpperBound' AND longitude >= '$lonLowerBound') AND active = '1'");
         $no_of_rows = mysqli_num_rows($result);
-        if ($no_of_rows > 0) {
-            // nearby sites exist
-            return true;
+		
+		if ($no_of_rows > 0) {
+            while ($row = $result->fetch_assoc()) {
+				$new_array[] = $row;
+			}	
+			return $new_array;
         } else {
-            // no nearby sites exist
-            return false;
+            return true;
         }
 	}
 	
@@ -267,6 +271,8 @@ class DB_Functions {
 	public function deleteSite($cid, $active){
 	
 		$result = mysqli_query($this->db->con, "UPDATE campsites SET active = '$active' WHERE unique_cid = '$cid'");
+		
+		$userHas = mysqli_query($this->db->con, "UPDATE user_has_campsites SET active = '0' WHERE campsite_fk = '$cid'");
 	
 		if($result) {
 			return true;
