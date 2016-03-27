@@ -127,11 +127,14 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 			
 			$ucid = $site["unique_cid"];
 			
+			//link site to user
+			$link = $db->linkSiteToOwner($uid, $ucid, $relat, $rating);
+			
 			if($image){
 				$data = $db->addImage($image, $ucid);
 			}
 			
-			if ($site) {
+			if ($site && $link) {
 				//site stored successfully
 				$response["cid"] = $site["unique_cid"];
 				$response["site"]["site_admin"] = $site["site_admin"];
@@ -139,7 +142,7 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 				$response["site"]["lon"] = $site["longitude"];
 				$response["site"]["title"] = $site["title"];
 				$response["site"]["description"] = $site["description"];
-				$response["site"]["rating"] = $site["rating"];
+				$response["site"]["rating"] = $link["rating"];
 				$response["site"]["feature1"] = $site["feature1"];
 				$response["site"]["feature2"] = $site["feature2"];
 				$response["site"]["feature3"] = $site["feature3"];
@@ -156,28 +159,21 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 
 				echo json_encode($response);
 				
-			} else {
+			} else if(!$site) {
 				//site failed to store
 				$response["error"] = TRUE;
 				$response["error_msg"] = "Error occured in storing site!";
 				echo json_encode($response);
-			}
-			
-			//link site to user
-			$link = $db->linkSiteToOwner($uid, $ucid, $relat);
-			
-			if ($link) {
-				//link made successfully
-				$responseLink["error"] = FALSE;
-				$responseLink["oid"] = $link["unique_oid"];
-				echo json_encode($responseLink);
-			
-			} else {
+			} else if (!$link) {
 				//link failed to be made
 				$response["error"] = TRUE;
 				$response["error_msg"] = "Error occured in linking site to user!";
 				echo json_encode($response);
+			} else {
+			
+			
 			}
+			
 			
 		} else if ($size > 0) {
             // site found
@@ -208,7 +204,11 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
             $response["error"] = FALSE;
 			$response["size"] = $size;
 			for($i = 0; $i<$size; $i++){
+				$ratings = $db->fetchRatings($known[$i]["unique_cid"]);
+				
 				$response["site$i"] = $known[$i];
+				$response["site$i"]["avr_rating"] = $ratings[0];
+				$response["site$i"]["no_of_raters"] = $ratings[1];
 			}
         } else {
             // site not found
@@ -219,7 +219,6 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
         }
 		
 		//get images
-				
 		$images = $db->fetchImages($uid);
 		
 		$sizeImages = sizeof($images);
@@ -503,6 +502,31 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 			echo json_encode($response);
 		}
 		
+	} else if ($tag == 'updateKnownSite') {
+
+		$active = (isset($decoded['active']) ? $decoded['active'] : null);
+		$uid = (isset($decoded['uid']) ? $decoded['uid'] : null);
+		$cid = (isset($decoded['cid']) ? $decoded['cid'] : null);
+		$rating = (isset($decoded['rating']) ? $decoded['rating'] : null);
+		$image = (isset($decoded['image']) ? $decoded['image'] : null);
+		
+		//update rating
+		$rating = $db->updateRating($active, $uid, $cid, $rating);
+		
+		if ($rating) {
+			//site stored successfully
+			$response["error"] = FALSE;
+			$response["site"]["rating"] = $rating["rating"];
+
+			echo json_encode($response);
+				
+		} else {
+			//site failed to store
+			$response["error"] = TRUE;
+			$response["error_msg"] = "Error occured in updating site!";
+			echo json_encode($response);
+		}
+	
 	} else if ($tag == 'uploadImage') {
 	
 		$image = (isset($decoded['image']) ? $decoded['image'] : null);

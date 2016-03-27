@@ -137,9 +137,9 @@ class DB_Functions {
         }
 	}
 	
-	public function linkSiteToOwner($uid, $ucid, $relat){
+	public function linkSiteToOwner($uid, $ucid, $relat, $rating){
 		$uoid = uniqid('', true);
-		$JNCT = mysqli_query($this->db->con,"INSERT INTO user_has_campsites(unique_oid, user_fk, campsite_fk, relationship, created_at, active) VALUES('$uoid', '$uid', '$ucid', '$relat', NOW(), '1')");
+		$JNCT = mysqli_query($this->db->con,"INSERT INTO user_has_campsites(unique_oid, user_fk, campsite_fk, relationship, created_at, active, rating) VALUES('$uoid', '$uid', '$ucid', '$relat', NOW(), 1, '$rating')");
 		// check for result
         if ($JNCT) {
             // gettig the details
@@ -363,6 +363,50 @@ class DB_Functions {
         } else {
             return false;
         }
+	}
+	
+	public function fetchRatings($unique_cid){
+	
+		$result = mysqli_query($this->db->con, "SELECT rating FROM user_has_campsites WHERE campsite_fk = '$unique_cid' AND active = '1' AND rating IS NOT NULL");
+	
+		$no_of_rows = mysqli_num_rows($result);
+		
+        if ($no_of_rows > 0) {
+		
+			//echo "no of rows ".$no_of_rows."\n";
+
+			while ($row = mysqli_fetch_assoc($result)){ 
+				//echo $row['rating'];
+				$array[] = $row['rating'];
+			}
+						
+			$totalRating = array_sum($array);
+			
+			//echo "total rating ".$totalRating."\n";
+			
+			$avrRating = ($totalRating/$no_of_rows);
+			
+			//echo "avr rating ".$avrRating."\n";
+			
+			$result_array[0] = $avrRating;
+			$result_array[1] = $no_of_rows;
+			
+			return $result_array;
+        } else {
+            return false;
+        }
+	
+	}
+	
+	public function updateRating($active, $uid, $cid, $rating){
+	
+		$result = mysqli_query($this->db->con, "UPDATE user_has_campsites SET rating = '$rating', updated_at = NOW() WHERE user_fk = '$uid' AND campsite_fk = '$cid'");  
+	
+		if($result) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 }
  
