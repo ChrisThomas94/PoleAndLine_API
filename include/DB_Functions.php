@@ -239,9 +239,9 @@ class DB_Functions {
 	
 	}
 	
-	public function getActiveTrades($uid, $tradeStatus){
+	public function getAllTrades($uid){
 	
-		$result = mysqli_query($this->db->con, "SELECT * FROM trades WHERE ((sender_uid_fk = '$uid' OR reciever_uid_fk = '$uid') AND status = '$tradeStatus')");
+		$result = mysqli_query($this->db->con, "SELECT * FROM trades WHERE(sender_uid_fk = '$uid' OR reciever_uid_fk = '$uid')");
 	
 		$no_of_rows = mysqli_num_rows($result);
 	

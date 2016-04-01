@@ -346,12 +346,12 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 		}
 		
 	
-	} else if ($tag == 'activeTrades') {
+	} else if ($tag == 'allTrades') {
 	
 		$uid = (isset($decoded['uid']) ? $decoded['uid'] : null);
-		$tradeStatus = (isset($decoded['tradeStatus']) ? $decoded['tradeStatus'] : null);
+		//$tradeStatus = (isset($decoded['tradeStatus']) ? $decoded['tradeStatus'] : null);
 		
-		$data = $db->getActiveTrades($uid, $tradeStatus);
+		$data = $db->getAllTrades($uid);
 		
 		$size = sizeof($data);
 		
