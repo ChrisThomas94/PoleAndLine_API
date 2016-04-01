@@ -450,6 +450,7 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 	} else if($tag == 'updateSite') {
 	
 		$active = (isset($decoded['active']) ? $decoded['active'] : null);
+		$uid = (isset($decoded['uid']) ? $decoded['uid'] : null);
 		$cid = (isset($decoded['cid']) ? $decoded['cid'] : null);
 		$title = (isset($decoded['title']) ? $decoded['title'] : null);
 		$description = (isset($decoded['description']) ? $decoded['description'] : null);
@@ -467,7 +468,9 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 		$image = (isset($decoded['image']) ? $decoded['image'] : null);
 
 		//update site
-		$site = $db->updateSite($active, $cid, $title, $description, $rating, $feature1, $feature2, $feature3, $feature4, $feature5, $feature6, $feature7, $feature8, $feature9, $feature10);
+		$site = $db->updateSite($cid, $title, $description, $feature1, $feature2, $feature3, $feature4, $feature5, $feature6, $feature7, $feature8, $feature9, $feature10);
+		
+		$rate = $db->updateOwnedRating($uid, $cid, $rating);
 		
 		if($image){
 			$data = $db->addImage($image, $cid);	
@@ -479,7 +482,7 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 			$response["cid"] = $site["unique_cid"];
 			$response["site"]["title"] = $site["title"];
 			$response["site"]["description"] = $site["description"];
-			$response["site"]["rating"] = $site["rating"];
+			$response["site"]["rating"] = $rate["rating"];
 			$response["site"]["feature1"] = $site["feature1"];
 			$response["site"]["feature2"] = $site["feature2"];
 			$response["site"]["feature3"] = $site["feature3"];

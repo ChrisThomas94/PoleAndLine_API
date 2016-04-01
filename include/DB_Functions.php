@@ -338,16 +338,26 @@ class DB_Functions {
 	
 	}
 	
-	public function updateSite($active, $cid, $title, $description, $rating, $feature1, $feature2, $feature3, $feature4, $feature5, $feature6, $feature7, $feature8, $feature9, $feature10){
+	public function updateSite($cid, $title, $description, $feature1, $feature2, $feature3, $feature4, $feature5, $feature6, $feature7, $feature8, $feature9, $feature10){
 	
-		$result = mysqli_query($this->db->con, "UPDATE campsites SET title = '$title', description = '$description', rating = '$rating', updated_at = NOW(), feature1 = $feature1, feature2 = $feature2, feature3 = $feature3, feature4 = $feature4, feature5 = $feature5, feature6 = $feature6, feature7 = $feature7, feature8 = $feature8, feature9 = $feature9, feature10 = $feature10  WHERE unique_cid = '$cid'");
+		$result = mysqli_query($this->db->con, "UPDATE campsites SET title = '$title', description = '$description', updated_at = NOW(), feature1 = $feature1, feature2 = $feature2, feature3 = $feature3, feature4 = $feature4, feature5 = $feature5, feature6 = $feature6, feature7 = $feature7, feature8 = $feature8, feature9 = $feature9, feature10 = $feature10  WHERE unique_cid = '$cid'");
 	
 		if($result) {
 			return true;
 		} else {
 			return false;
 		}
+	}
 	
+	public function updateOwnedRating($uid, $cid, $rating){
+	
+		$result = mysqli_query($this->db->con, "UPDATE user_has_campsites SET rating = '$rating', updated_at = NOW() WHERE user_fk = '$uid' AND campsite_fk = '$cid'");
+		
+		if($result) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 	
 	public function checkPopularity($cid){
