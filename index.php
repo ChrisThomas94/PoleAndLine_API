@@ -512,9 +512,12 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 		$cid = (isset($decoded['cid']) ? $decoded['cid'] : null);
 		$rating = (isset($decoded['rating']) ? $decoded['rating'] : null);
 		$image = (isset($decoded['image']) ? $decoded['image'] : null);
+		$imageNum = (isset($decoded['imageNum']) ? $decoded['imageNum'] : null);
 		
 		//update rating
 		$rating = $db->updateRating($active, $uid, $cid, $rating);
+		
+		$image = $db->updateImages($cid, $image, $imageNum);
 		
 		if ($rating) {
 			//site stored successfully

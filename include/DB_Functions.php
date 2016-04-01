@@ -317,6 +317,18 @@ class DB_Functions {
 	
 	}
 	
+	public function updateImages($cid, $image, $imageNum){
+	
+		$result = mysqli_query($this->db->con, "UPDATE images_of_campsites SET image+'$imageNum' = '$image' WHERE campsite_fk = '$cid'");
+		
+		if($result) {
+			return true;
+		} else {
+			return false;
+		}
+	
+	}
+	
 	public function fetchImagesCid($cid){
 
 		$result = mysqli_query($this->db->con, "SELECT * FROM images_of_campsites WHERE campsite_fk = '$cid'");
