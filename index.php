@@ -551,6 +551,56 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 		}
 
 	
+	} else if ($tag == 'questions') {
+	
+		$uid = (isset($decoded['uid']) ? $decoded['uid'] : null);
+	
+		$data = $db->getQuestions();
+		
+		$ans = $db->getAnswers($uid);
+		
+		$size = sizeof($data);
+		
+		if($data[0] == null){
+			$response["error"] = FALSE;
+			$response["size"] = 0;
+			echo json_encode($response);
+		} else if($data) {
+			$response["error"] = FALSE;
+			$response["size"] = $size;
+			for($i = 0; $i<$size; $i++){
+			$j = $i+1;
+				$response["question$i"] = $data[$i];
+				$response["question$i"]["answer"] = $ans["question$j"];
+			}
+			echo json_encode($response);
+		} else {
+			$response["error"] = TRUE;
+			$response["error_msg"] = "Error fetching questions!";
+			echo json_encode($response);
+		}
+	
+	} else if ($tag == 'answers') {
+	
+		$uid = (isset($decoded['uid']) ? $decoded['uid'] : null);
+		$question1 = (isset($decoded['question1']) ? $decoded['question1'] : null);
+		$question2 = (isset($decoded['question2']) ? $decoded['question2'] : null);
+		$question3 = (isset($decoded['question3']) ? $decoded['question3'] : null);
+		$question4 = (isset($decoded['question4']) ? $decoded['question4'] : null);
+		$question5 = (isset($decoded['question5']) ? $decoded['question5'] : null);
+
+
+		$data = $db->updateAnswers($uid, $question1, $question2, $question3, $question4, $question5);
+		
+		if($data){
+			$response["error"] = FALSE;
+			echo json_encode($response);
+		} else {
+			$response["error"] = TRUE;
+			$response["error_msg"] = "Error fetching answers!";
+			echo json_encode($response);
+		}
+	
 	} else {
         // request failed
         $response["error"] = TRUE;

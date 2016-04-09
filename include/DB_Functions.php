@@ -430,6 +430,48 @@ class DB_Functions {
 			return false;
 		}
 	}
+	
+	public function getQuestions(){
+	
+		$result = mysqli_query($this->db->con, "SELECT question, answer1, answer2, answer3, answer4 FROM questions WHERE active = '1'");
+
+		// check for result 
+        $no_of_rows = mysqli_num_rows($result);
+		
+        if ($no_of_rows > 0) {
+		
+            while ($row = $result->fetch_assoc()) {
+				$new_array[] = $row;
+			}	
+			return $new_array;
+        } else if ($no_of_rows == 0){
+			return true;
+		} else {
+            return false;
+        }
+	}
+	
+	public function getAnswers($uid){
+	
+		$result = mysqli_query($this->db->con, "SELECT question1, question2, question3, question4, question5 FROM users WHERE unique_uid = '$uid'");
+
+		if($result){
+			return mysqli_fetch_array($result);
+		} else {
+			return false;
+		}
+	}
+	
+	public function updateAnswers($uid, $question1, $question2, $question3, $question4, $question5){
+	
+		$result = mysqli_query($this->db->con, "UPDATE users SET question1 = '$question1', question2 = '$question2', question3 = '$question3', question4 = '$question4', question5 = '$question5' WHERE unique_uid = '$uid'");
+
+		if($result){
+			return true;
+		} else {
+			return false;
+		}
+	}
 }
  
 ?>
