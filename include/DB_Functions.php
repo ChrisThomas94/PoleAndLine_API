@@ -451,9 +451,9 @@ class DB_Functions {
         }
 	}
 	
-	public function getAnswers($uid){
+	public function getUserDetails($uid, $email){
 	
-		$result = mysqli_query($this->db->con, "SELECT question1, question2, question3, question4, question5 FROM users WHERE unique_uid = '$uid'");
+		$result = mysqli_query($this->db->con, "SELECT name, email, bio, question1, question2, question3, question4, question5 FROM users WHERE unique_uid = '$uid' OR email = '$email'");
 
 		if($result){
 			return mysqli_fetch_array($result);
@@ -471,6 +471,18 @@ class DB_Functions {
 		} else {
 			return false;
 		}
+	}
+	
+	public function getUserByEmail($email){
+	
+		$result = mysqli_query($this->db->con, "SELECT name, email, bio,  FROM users WHERE email = '$email'");
+
+		if($result){
+			return mysqli_fetch_array($result);
+		} else {
+			return false;
+		}
+	
 	}
 }
  

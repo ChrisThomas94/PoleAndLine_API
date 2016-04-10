@@ -554,10 +554,12 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 	} else if ($tag == 'questions') {
 	
 		$uid = (isset($decoded['uid']) ? $decoded['uid'] : null);
+		$email = (isset($decoded['email']) ? $decoded['email'] : null);
+
 	
 		$data = $db->getQuestions();
 		
-		$ans = $db->getAnswers($uid);
+		$ans = $db->getUserDetails($uid, $email);
 		
 		$size = sizeof($data);
 		
@@ -568,6 +570,9 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 		} else if($data) {
 			$response["error"] = FALSE;
 			$response["size"] = $size;
+			$response["name"] = $ans["name"];
+			$response["email"] = $ans["email"];
+			$response["bio"] = $ans["bio"];						
 			for($i = 0; $i<$size; $i++){
 			$j = $i+1;
 				$response["question$i"] = $data[$i];
@@ -601,7 +606,22 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 			echo json_encode($response);
 		}
 	
-	} else {
+	} else if ($tag == 'otherUser'){
+
+		$email = (isset($decoded['email']) ? $decoded['email'] : null);
+		
+		$data = $db->getUserByEmail($email);
+		
+		if($data){
+			$response["error"] = FALSE;
+			echo json_encode($response);
+		} else {
+			$response["error"] = TRUE;
+			$response["error_msg"] = "Error fetching user!";
+			echo json_encode($response);
+		}
+
+	}	else {
         // request failed
         $response["error"] = TRUE;
         $response["error_msg"] = "Unknown 'tag' value.";
