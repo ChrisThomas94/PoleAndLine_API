@@ -553,13 +553,12 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 	
 	} else if ($tag == 'questions') {
 	
-		$uid = (isset($decoded['uid']) ? $decoded['uid'] : null);
 		$email = (isset($decoded['email']) ? $decoded['email'] : null);
 
 	
 		$data = $db->getQuestions();
 		
-		$ans = $db->getUserDetails($uid, $email);
+		$ans = $db->getUserDetails($email);
 		
 		$size = sizeof($data);
 		

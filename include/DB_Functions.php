@@ -451,9 +451,9 @@ class DB_Functions {
         }
 	}
 	
-	public function getUserDetails($uid, $email){
+	public function getUserDetails($email){
 	
-		$result = mysqli_query($this->db->con, "SELECT name, email, bio, question1, question2, question3, question4, question5 FROM users WHERE unique_uid = '$uid' OR email = '$email'");
+		$result = mysqli_query($this->db->con, "SELECT name, email, bio, question1, question2, question3, question4, question5 FROM users WHERE email = '$email'");
 
 		if($result){
 			return mysqli_fetch_array($result);
