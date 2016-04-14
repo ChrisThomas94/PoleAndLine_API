@@ -484,6 +484,18 @@ class DB_Functions {
 		}
 	
 	}
+	
+	public function updateProfile($uid, $name, $email, $bio){
+	
+		$result = mysqli_query($this->db->con, "UPDATE users SET name = '$name', email = '$email', bio = '$bio' WHERE unique_uid = '$uid'");
+
+		if($result){
+			return true;
+		} else {
+			return false;
+		}
+	
+	}
 }
  
 ?>

@@ -601,7 +601,7 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 			echo json_encode($response);
 		} else {
 			$response["error"] = TRUE;
-			$response["error_msg"] = "Error fetching answers!";
+			$response["error_msg"] = "Error updating answers!";
 			echo json_encode($response);
 		}
 	
@@ -620,6 +620,24 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 			echo json_encode($response);
 		}
 
+	} else if($tag == 'updateProfile'){
+
+		$uid = (isset($decoded['uid']) ? $decoded['uid'] : null);
+		$name = (isset($decoded['name']) ? $decoded['name'] : null);
+		$email = (isset($decoded['email']) ? $decoded['email'] : null);
+		$bio = (isset($decoded['bio']) ? $decoded['bio'] : null);
+		
+		$data = $db->updateProfile($uid, $name, $email, $bio);
+		
+		if($data){
+			$response["error"] = FALSE;
+			echo json_encode($response);
+		} else {
+			$response["error"] = TRUE;
+			$response["error_msg"] = "Error updating profile!";
+			echo json_encode($response);
+		}
+	
 	}	else {
         // request failed
         $response["error"] = TRUE;
