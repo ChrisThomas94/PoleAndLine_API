@@ -485,9 +485,9 @@ class DB_Functions {
 	
 	}
 	
-	public function updateProfile($uid, $name, $email, $bio){
+	public function updateProfile($uid, $bio){
 	
-		$result = mysqli_query($this->db->con, "UPDATE users SET name = '$name', email = '$email', bio = '$bio' WHERE unique_uid = '$uid'");
+		$result = mysqli_query($this->db->con, "UPDATE users SET bio = '$bio' WHERE unique_uid = '$uid'");
 
 		if($result){
 			return true;

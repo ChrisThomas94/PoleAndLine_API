@@ -623,11 +623,9 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 	} else if($tag == 'updateProfile'){
 
 		$uid = (isset($decoded['uid']) ? $decoded['uid'] : null);
-		$name = (isset($decoded['name']) ? $decoded['name'] : null);
-		$email = (isset($decoded['email']) ? $decoded['email'] : null);
 		$bio = (isset($decoded['bio']) ? $decoded['bio'] : null);
 		
-		$data = $db->updateProfile($uid, $name, $email, $bio);
+		$data = $db->updateProfile($uid, $bio);
 		
 		if($data){
 			$response["error"] = FALSE;
