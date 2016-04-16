@@ -241,6 +241,8 @@ class DB_Functions {
 	
 	public function getAllTrades($uid){
 	
+		//$result = mysqli_query($this->db->con, "SELECT * FROM trades INNER JOIN campsites ON trades.send_cid_fk = campsites.unique_cid AND trades.recieve_cid_fk = campsites.unique_cid WHERE(sender_uid_fk = '$uid' OR reciever_uid_fk = '$uid') AND campsites.active '1'");
+		
 		$result = mysqli_query($this->db->con, "SELECT * FROM trades WHERE(sender_uid_fk = '$uid' OR reciever_uid_fk = '$uid')");
 	
 		$no_of_rows = mysqli_num_rows($result);
@@ -453,7 +455,7 @@ class DB_Functions {
 	
 	public function getUserDetails($email){
 	
-		$result = mysqli_query($this->db->con, "SELECT name, email, bio, question1, question2, question3, question4, question5 FROM users WHERE email = '$email'");
+		$result = mysqli_query($this->db->con, "SELECT name, email, bio, profile_pic, question1, question2, question3, question4, question5 FROM users WHERE email = '$email'");
 
 		if($result){
 			return mysqli_fetch_array($result);
@@ -464,7 +466,7 @@ class DB_Functions {
 	
 	public function updateAnswers($uid, $question1, $question2, $question3, $question4, $question5){
 	
-		$result = mysqli_query($this->db->con, "UPDATE users SET question1 = '$question1', question2 = '$question2', question3 = '$question3', question4 = '$question4', question5 = '$question5' WHERE unique_uid = '$uid'");
+		$result = mysqli_query($this->db->con, "UPDATE users SET question1 = '$question1', question2 = '$question2', question3 = '$question3', question4 = '$question4', question5 = '$question5', updated_at = NOW() WHERE unique_uid = '$uid'");
 
 		if($result){
 			return true;
@@ -475,19 +477,18 @@ class DB_Functions {
 	
 	public function getUserByEmail($email){
 	
-		$result = mysqli_query($this->db->con, "SELECT name, email, bio,  FROM users WHERE email = '$email'");
+		$result = mysqli_query($this->db->con, "SELECT name, email, bio, profile_pic FROM users WHERE email = '$email'");
 
 		if($result){
 			return mysqli_fetch_array($result);
 		} else {
 			return false;
 		}
-	
 	}
 	
-	public function updateProfile($uid, $bio){
+	public function updateProfile($uid, $bio, $profile_pic){
 	
-		$result = mysqli_query($this->db->con, "UPDATE users SET bio = '$bio' WHERE unique_uid = '$uid'");
+		$result = mysqli_query($this->db->con, "UPDATE users SET bio = '$bio', profile_pic = '$profile_pic', updated_at = NOW() WHERE unique_uid = '$uid'");
 
 		if($result){
 			return true;
@@ -495,6 +496,17 @@ class DB_Functions {
 			return false;
 		}
 	
+	}
+	
+	public function deleteTrades($cid){
+	
+		$result = mysqli_query($this->db->con, "UPDATE trades SET status = '3' WHERE send_cid_fk = '$cid' OR recieve_cid_fk = '$cid'");
+
+		if($result){
+			return true;
+		} else {
+			return false;
+		}	
 	}
 }
  

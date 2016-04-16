@@ -46,6 +46,7 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
             $response["uid"] = $user["unique_uid"];
             $response["user"]["name"] = $user["name"];
             $response["user"]["email"] = $user["email"];
+			$response["user"]["profile_pic"] = $user["profile_pic"];
             $response["user"]["created_at"] = $user["created_at"];
             $response["user"]["updated_at"] = $user["updated_at"];
             echo json_encode($response);
@@ -436,6 +437,8 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 		
 		$data = $db->deleteSite($cid, $active);
 		
+		$rem = $db->deleteTrades($cid);
+		
 		if($data) {
 			// trades found
             $response["error"] = FALSE;
@@ -571,7 +574,8 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 			$response["size"] = $size;
 			$response["name"] = $ans["name"];
 			$response["email"] = $ans["email"];
-			$response["bio"] = $ans["bio"];						
+			$response["bio"] = $ans["bio"];		
+			$response["profile_pic"] = $ans["profile_pic"];
 			for($i = 0; $i<$size; $i++){
 			$j = $i+1;
 				$response["question$i"] = $data[$i];
@@ -624,8 +628,9 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 
 		$uid = (isset($decoded['uid']) ? $decoded['uid'] : null);
 		$bio = (isset($decoded['bio']) ? $decoded['bio'] : null);
+		$profile_pic = (isset($decoded['profile_pic']) ? $decoded['profile_pic'] : null);
 		
-		$data = $db->updateProfile($uid, $bio);
+		$data = $db->updateProfile($uid, $bio, $profile_pic);
 		
 		if($data){
 			$response["error"] = FALSE;
