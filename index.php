@@ -46,6 +46,7 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
             $response["uid"] = $user["unique_uid"];
             $response["user"]["name"] = $user["name"];
             $response["user"]["email"] = $user["email"];
+			$response["user"]["bio"] = $user["bio"];
 			$response["user"]["profile_pic"] = $user["profile_pic"];
             $response["user"]["created_at"] = $user["created_at"];
             $response["user"]["updated_at"] = $user["updated_at"];
@@ -387,27 +388,33 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 		
 		if($tradeStatus == 2){
 		
+			$check = $db->checkForExistingLink($receiver_uid, $send_cid, $relat);
+			
+			if($check){
+			
+				$linkReceiver = $db->linkSiteToOwner($receiver_uid, $send_cid, $relat);
+				
+				if ($linkReceiver) {
+					//link made successfully
+					$responseLinkRec["error"] = FALSE;
+					$responseLinkRec["oid"] = $linkReceiver["unique_oid"];
+					echo json_encode($responseLinkRec);
+					
+				} else {
+					//link failed to be made
+					$response["error"] = TRUE;
+					$response["error_msg"] = "Error occured in linking sender";
+					echo json_encode($response);
+				}
+			}
+			
 			$linkSender = $db->linkSiteToOwner($sender_uid, $receive_cid, $relat);
-			$linkReceiver = $db->linkSiteToOwner($receiver_uid, $send_cid, $relat);
 			
 			if ($linkSender) {
 				//link made successfully
 				$responseLinkSend["error"] = FALSE;
 				$responseLinkSend["oid"] = $linkSender["unique_oid"];
 				echo json_encode($responseLinkSend);
-				
-			} else {
-				//link failed to be made
-				$response["error"] = TRUE;
-				$response["error_msg"] = "Error occured in linking sender";
-				echo json_encode($response);
-			}
-			
-			if ($linkReceiver) {
-				//link made successfully
-				$responseLinkRec["error"] = FALSE;
-				$responseLinkRec["oid"] = $linkReceiver["unique_oid"];
-				echo json_encode($responseLinkRec);
 				
 			} else {
 				//link failed to be made
@@ -596,9 +603,14 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 		$question3 = (isset($decoded['question3']) ? $decoded['question3'] : null);
 		$question4 = (isset($decoded['question4']) ? $decoded['question4'] : null);
 		$question5 = (isset($decoded['question5']) ? $decoded['question5'] : null);
+		$question6 = (isset($decoded['question6']) ? $decoded['question6'] : null);
+		$question7 = (isset($decoded['question7']) ? $decoded['question7'] : null);
+		$question8 = (isset($decoded['question8']) ? $decoded['question8'] : null);
+		$question9 = (isset($decoded['question9']) ? $decoded['question9'] : null);
 
 
-		$data = $db->updateAnswers($uid, $question1, $question2, $question3, $question4, $question5);
+
+		$data = $db->updateAnswers($uid, $question1, $question2, $question3, $question4, $question5, $question6, $question7, $question8, $question9);
 		
 		if($data){
 			$response["error"] = FALSE;

@@ -139,7 +139,15 @@ class DB_Functions {
 	
 	public function linkSiteToOwner($uid, $ucid, $relat, $rating){
 		$uoid = uniqid('', true);
-		$JNCT = mysqli_query($this->db->con,"INSERT INTO user_has_campsites(unique_oid, user_fk, campsite_fk, relationship, created_at, active, rating) VALUES('$uoid', '$uid', '$ucid', '$relat', NOW(), 1, '$rating')");
+		
+		if($rating == NULL){
+		
+				$JNCT = mysqli_query($this->db->con,"INSERT INTO user_has_campsites(unique_oid, user_fk, campsite_fk, relationship, created_at, active) VALUES('$uoid', '$uid', '$ucid', '$relat', NOW(), 1)");
+		} else {		
+			
+			$JNCT = mysqli_query($this->db->con,"INSERT INTO user_has_campsites(unique_oid, user_fk, campsite_fk, relationship, created_at, active, rating) VALUES('$uoid', '$uid', '$ucid', '$relat', NOW(), 1, '$rating')");
+		}
+		
 		// check for result
         if ($JNCT) {
             // gettig the details
@@ -150,6 +158,20 @@ class DB_Functions {
             return mysqli_fetch_array($result);
         } else {
             return false;
+        }
+	}
+	
+	public function checkForExistingLink($receiver_uid, $send_cid, $relat){
+	
+		$result = mysqli_query($this->db->con,"SELECT * FROM user_has_campsites WHERE user_fk = '$receiver_uid' AND campsite_fk = '$send_cid' AND relationship = '$relat'");
+
+		$no_of_rows = mysqli_num_rows($result);
+		
+		if ($no_of_rows > 0) {
+            	
+			return false;
+        } else {
+            return true;
         }
 	}
 	
@@ -455,7 +477,7 @@ class DB_Functions {
 	
 	public function getUserDetails($email){
 	
-		$result = mysqli_query($this->db->con, "SELECT name, email, bio, profile_pic, question1, question2, question3, question4, question5 FROM users WHERE email = '$email'");
+		$result = mysqli_query($this->db->con, "SELECT name, email, bio, profile_pic, question1, question2, question3, question4, question5, question6, question7, question8, question9 FROM users WHERE email = '$email'");
 
 		if($result){
 			return mysqli_fetch_array($result);
@@ -464,9 +486,9 @@ class DB_Functions {
 		}
 	}
 	
-	public function updateAnswers($uid, $question1, $question2, $question3, $question4, $question5){
+	public function updateAnswers($uid, $question1, $question2, $question3, $question4, $question5, $question6, $question7, $question8, $question9){
 	
-		$result = mysqli_query($this->db->con, "UPDATE users SET question1 = '$question1', question2 = '$question2', question3 = '$question3', question4 = '$question4', question5 = '$question5', updated_at = NOW() WHERE unique_uid = '$uid'");
+		$result = mysqli_query($this->db->con, "UPDATE users SET question1 = '$question1', question2 = '$question2', question3 = '$question3', question4 = '$question4', question5 = '$question5', question6 = '$question6', question7 = '$question7', question8 = '$question8', question9 = '$question9', updated_at = NOW() WHERE unique_uid = '$uid'");
 
 		if($result){
 			return true;
