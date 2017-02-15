@@ -61,6 +61,7 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
     } else if ($tag == 'register') {
         // Request type is Register new user
 		$name = (isset($decoded['name']) ? $decoded['name'] : null);
+		$token = (isset($decoded['token']) ? $decoded['token'] : null);
 		$email = (isset($decoded['email']) ? $decoded['email'] : null);
 		$password = (isset($decoded['password']) ? $decoded['password'] : null);
  
@@ -72,11 +73,12 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
             echo json_encode($response);
         } else {
             // store user
-            $user = $db->storeUser($name, $email, $password);
+            $user = $db->storeUser($name, $token, $email, $password);
             if ($user) {
                 // user stored successfully
                 $response["error"] = FALSE;
                 $response["uid"] = $user["unique_uid"];
+				$response["user"]["token"] = $user["token"];
                 $response["user"]["name"] = $user["name"];
                 $response["user"]["email"] = $user["email"];
                 $response["user"]["created_at"] = $user["created_at"];
