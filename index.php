@@ -256,6 +256,9 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 		//get sites
 		$unknown = $db->fetchUnknownSites($uid, $relatOwn, $relatTrade);
 		$size = sizeof($unknown);
+		
+
+		
         
 		if($unknown[0] == null){
 			$response["error"] = FALSE;
@@ -268,8 +271,12 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 			for($i = 0; $i<$size; $i++){
 				$pop = $db->checkPopularity($unknown[$i]['unique_cid']);
 				
+				//get owner token
+				$token = $db->fetchToken($unknown[$i]['unique_cid']);
+				
 				$response["site$i"]["pop"] = $pop;
 				$response["site$i"]["details"] = $unknown[$i];
+				$response["site$i"]["token"] = $token;
 			}
             echo json_encode($response);
         } else {

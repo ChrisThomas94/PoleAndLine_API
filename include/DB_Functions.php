@@ -221,6 +221,17 @@ class DB_Functions {
         }
 	}
 	
+	public function fetchToken($cid){
+	
+		$result = mysqli_query($this->db->con, "SELECT token FROM users INNER JOIN user_has_campsites ON user_has_campsites.campsite_fk = campsites.unique_cid INNER JOIN users ON users.unique_uid = user_has_campsites.user_fk WHERE ((user_has_campsites.campsite_fk != '$cid' AND user_has_campsites.relationship = '90') OR (user_has_campsites.campsite_fk != '$cid' AND user_has_campsites.relationship != '45')) AND user_has_campsites.active = '1' AND campsites.active = '1'");
+		
+		if($result){
+			return true;
+        } else {
+            return false;
+        }
+	}
+	
 	public function createRequest($uid, $tradeStatus, $send_fk, $recieve_fk, $reciever_fk){
 	
 		$utid = uniqid('', true);
