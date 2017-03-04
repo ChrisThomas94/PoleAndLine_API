@@ -112,7 +112,9 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 		$feature8 = (isset($decoded['feature8']) ? $decoded['feature8'] : null);
 		$feature9 = (isset($decoded['feature9']) ? $decoded['feature9'] : null);
 		$feature10 = (isset($decoded['feature10']) ? $decoded['feature10'] : null);
-		$image = (isset($decoded['image']) ? $decoded['image'] : null);
+		$image1 = (isset($decoded['image1']) ? $decoded['image1'] : null);
+		$image2 = (isset($decoded['image2']) ? $decoded['image2'] : null);
+		$image3 = (isset($decoded['image3']) ? $decoded['image3'] : null);
 		$latLowerBound = (isset($decoded['latLowerBound']) ? $decoded['latLowerBound'] : null);
 		$latUpperBound = (isset($decoded['latUpperBound']) ? $decoded['latUpperBound'] : null);
 		$lonLowerBound = (isset($decoded['lonLowerBound']) ? $decoded['lonLowerBound'] : null);
@@ -134,8 +136,8 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 			//link site to user
 			$link = $db->linkSiteToOwner($uid, $ucid, $relat, $rating);
 			
-			if($image){
-				$data = $db->addImage($image, $ucid);
+			if($image1){
+				$data = $db->addImages($image1, $image2, $image3, $ucid);
 			}
 			
 			if ($site && $link) {
@@ -209,7 +211,7 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 			$response["size"] = $size;
 			for($i = 0; $i<$size; $i++){
 				$ratings = $db->fetchRatings($known[$i]["unique_cid"]);
-				
+								
 				$response["site$i"] = $known[$i];
 				$response["site$i"]["avr_rating"] = $ratings[0];
 				$response["site$i"]["no_of_raters"] = $ratings[1];
@@ -220,32 +222,19 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
             $response["error"] = TRUE;
             $response["error_msg"] = "Error fetching known sites!!";
             echo json_encode($response);
-        }
+        }	
 		
+		echo json_encode($response);
+
+			
+	} else if($tag == 'images'){
+		
+		$cid = (isset($decoded['cid']) ? $decoded['cid'] : null);
+
 		//get images
-		$images = $db->fetchImages($uid);
-		
+		$images = $db->fetchImages($cid);
 		$sizeImages = sizeof($images);
 		
-		if ($images) {
-           //site found
-            $response["error"] = FALSE;
-			$response["sizeImages"] = $sizeImages;
-			for($i = 0; $i<$sizeImages; $i++){
-				$response["image$i"] = $images[$i];
-			}
-            echo json_encode($response);
-        } else {
-            //site not found
-            //echo json with error = 1
-            $response["error"] = TRUE;
-            $response["error_msg"] = "Error fetching Images!!";
-            echo json_encode($response);
-        }
-		
-
-		
-			
 	} else if ($tag == 'unknownSites') {
 	
 		//request type is fetch knownSites

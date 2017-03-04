@@ -317,11 +317,11 @@ class DB_Functions {
 	
 	}
 	
-	public function addImage($image, $cid){
+	public function addImages($image1, $image2, $image3, $cid){
 	
 		$uiid = uniqid('', true);
 	
-		$result = mysqli_query($this->db->con, "INSERT INTO images_of_campsites (active, unique_id, image, campsite_fk, uploaded_at) VALUES ('1', '$uiid', '$image', '$cid', NOW())");
+		$result = mysqli_query($this->db->con, "INSERT INTO images_of_campsites (active, unique_id, image1, image2, image3, campsite_fk, uploaded_at) VALUES ('1', '$uiid', '$image1', '$image2', '$image3', '$cid', NOW())");
 	
 		if($result) {
 			return true;
@@ -331,9 +331,9 @@ class DB_Functions {
 	
 	}
 	
-	public function fetchImages($uid){
+	public function fetchImages($unique_cid){
 
-		$result = mysqli_query($this->db->con, "SELECT * FROM images_of_campsites INNER JOIN user_has_campsites ON user_has_campsites.campsite_fk = images_of_campsites.campsite_fk WHERE user_has_campsites.user_fk = '$uid' AND images_of_campsites.active = '1' AND user_has_campsites.active = '1'");
+		$result = mysqli_query($this->db->con, "SELECT image1, image2, image3 FROM images_of_campsites INNER JOIN user_has_campsites ON user_has_campsites.campsite_fk = images_of_campsites.campsite_fk WHERE images_of_campsites.campsite_fk = '$unique_cid' AND images_of_campsites.active = '1' AND user_has_campsites.active = '1'");
 	
 		// check for result 
         $no_of_rows = mysqli_num_rows($result);
