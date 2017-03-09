@@ -235,6 +235,12 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 		$images = $db->fetchImages($cid);
 		$sizeImages = sizeof($images);
 		
+		$response["images"] = $images;
+		
+		echo json_encode($response);
+		
+		//echo $sizeImages;
+		
 	} else if ($tag == 'unknownSites') {
 	
 		//request type is fetch knownSites
