@@ -102,6 +102,12 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 		$title = (isset($decoded['title']) ? $decoded['title'] : null);
 		$description = (isset($decoded['description']) ? $decoded['description'] : null);
 		$rating = (isset($decoded['rating']) ? $decoded['rating'] : null);
+		
+		$permission = (isset($decoded['permission']) ? $decoded['permission'] : null);
+		$distantTerrain = (isset($decoded['distant']) ? $decoded['distant'] : null);
+		$nearbyTerrain = (isset($decoded['nearby']) ? $decoded['nearby'] : null);
+		$immediateTerrain = (isset($decoded['immediate']) ? $decoded['immediate'] : null);
+		
 		$feature1 = (isset($decoded['feature1']) ? $decoded['feature1'] : null);
 		$feature2 = (isset($decoded['feature2']) ? $decoded['feature2'] : null);
 		$feature3 = (isset($decoded['feature3']) ? $decoded['feature3'] : null);
@@ -129,7 +135,7 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 			$response["size"] = 0;
 				
 			//store site
-			$site = $db->storeSite($email, $lat, $lon, $title, $description, $rating, $feature1, $feature2, $feature3, $feature4, $feature5, $feature6, $feature7, $feature8, $feature9, $feature10);
+			$site = $db->storeSite($email, $lat, $lon, $title, $description, $rating, $permission, $distantTerrain, $nearbyTerrain, $immediateTerrain, $feature1, $feature2, $feature3, $feature4, $feature5, $feature6, $feature7, $feature8, $feature9, $feature10);
 			
 			$ucid = $site["unique_cid"];
 			
@@ -149,6 +155,12 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 				$response["site"]["title"] = $site["title"];
 				$response["site"]["description"] = $site["description"];
 				$response["site"]["rating"] = $link["rating"];
+
+				$response["site"]["permission"] = $site["permission"];
+				$response["site"]["distantTerrain"] = $site["distantTerrain"];
+				$response["site"]["nearbyTerrain"] = $site["nearbyTerrain"];
+				$response["site"]["immediateTerrain"] = $site["immediateTerrain"];
+
 				$response["site"]["feature1"] = $site["feature1"];
 				$response["site"]["feature2"] = $site["feature2"];
 				$response["site"]["feature3"] = $site["feature3"];
