@@ -706,5 +706,17 @@ class DB_Functions {
 		}	
 		
 	}
+	
+	public function getGiftedNum($uid){
+		
+		$result = mysqli_query($this->db->con, "SELECT gifted FROM users WHERE unique_uid = '$uid' ");
+
+		if($result){
+			return $result;
+		} else {
+			return false;
+		}
+		
+	}
 }
 ?>

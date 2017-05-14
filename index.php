@@ -679,6 +679,7 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 		
 		if($data){
 			$response["error"] = FALSE;
+			$response["answers"] = $answers;
 			echo json_encode($response);
 		} else {
 			$response["error"] = TRUE;
@@ -742,9 +743,10 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 		$relat = 45;
 		$gift = true;
 		
-		$data = $db->linkSiteToOwner($uid, $cid, $relat, $gift, NULL);
+		$result = $db->linkSiteToOwner($uid, $cid, $relat, $gift, NULL);
 		
-		if($data){
+		
+		if($result){
 			
 			$response["error"] = FALSE;
 			echo json_encode($response);
