@@ -41,15 +41,34 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
         // check for user
         $user = $db->getUserByEmailAndPassword($email, $password);
         if ($user != false) {
+			
+			$badges = $db->fetchBadges($user["unique_uid"]);
+			
             // user found
             $response["error"] = FALSE;
             $response["uid"] = $user["unique_uid"];
             $response["user"]["name"] = $user["name"];
             $response["user"]["email"] = $user["email"];
 			$response["user"]["bio"] = $user["bio"];
-			$response["user"]["profile_pic"] = $user["profile_pic"];
+			$response["user"]["why"] = $user["why"];
+			$response["user"]["verified"] = $user["verified"];
+			$response["user"]["token"] = $user["token"];
+			$response["user"]["userType"] = $user["userType"];
+			$response["user"]["numSites"] = $user["numSites"];
+			$response["user"]["numTrades"] = $user["numTrades"];
             $response["user"]["created_at"] = $user["created_at"];
             $response["user"]["updated_at"] = $user["updated_at"];
+            $response["user"]["vouch"] = $user["vouch"];
+            $response["user"]["gifted"] = $user["gifted"];
+            $response["user"]["reported"] = $user["reported"];
+			
+			for($i = 1; $i<=9; $i++){
+				$response["user"]["answer$i"] = $user["question$i"];
+			}
+			
+			$response["user"]["profile_pic"] = $user["profile_pic"];
+			$response["user"]["cover_pic"] = $user["cover_pic"];
+			$response["badges"] = $badges;
             echo json_encode($response);
         } else {
             // user not found
@@ -69,21 +88,23 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
         if ($db->isUserExisted($email)) {
             // user is already existed - error response
             $response["error"] = TRUE;
-            $response["error_msg"] = "User already existed";
+            $response["error_msg"] = "A profile with this email address already exists!";
             echo json_encode($response);
         } else {
             // store user
             $user = $db->storeUser($name, $token, $email, $password);
-            if ($user) {
-                // user stored successfully
-                $response["error"] = FALSE;
-                $response["uid"] = $user["unique_uid"];
+			
+            if ($user) {				
+				// user stored successfully
+				$response["error"] = FALSE;
+				$response["uid"] = $user["unique_uid"];
 				$response["user"]["token"] = $user["token"];
-                $response["user"]["name"] = $user["name"];
-                $response["user"]["email"] = $user["email"];
-                $response["user"]["created_at"] = $user["created_at"];
-                $response["user"]["updated_at"] = $user["updated_at"];
-                echo json_encode($response);
+				$response["user"]["name"] = $user["name"];
+				$response["user"]["email"] = $user["email"];
+				$response["user"]["created_at"] = $user["created_at"];
+				$response["user"]["updated_at"] = $user["updated_at"];
+				echo json_encode($response);
+
             } else {
                 // user failed to store
                 $response["error"] = TRUE;
@@ -101,6 +122,7 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 		$lon = (isset($decoded['lon']) ? $decoded['lon'] : null);
 		$title = (isset($decoded['title']) ? $decoded['title'] : null);
 		$description = (isset($decoded['description']) ? $decoded['description'] : null);
+		$classification = (isset($decoded['classification']) ? $decoded['classification'] : null);
 		$rating = (isset($decoded['rating']) ? $decoded['rating'] : null);
 		
 		$permission = (isset($decoded['permission']) ? $decoded['permission'] : null);
@@ -117,36 +139,56 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 		$feature7 = (isset($decoded['feature7']) ? $decoded['feature7'] : null);
 		$feature8 = (isset($decoded['feature8']) ? $decoded['feature8'] : null);
 		$feature9 = (isset($decoded['feature9']) ? $decoded['feature9'] : null);
-		$feature10 = (isset($decoded['feature10']) ? $decoded['feature10'] : null);
-		$image1 = (isset($decoded['image1']) ? $decoded['image1'] : null);
-		$image2 = (isset($decoded['image2']) ? $decoded['image2'] : null);
-		$image3 = (isset($decoded['image3']) ? $decoded['image3'] : null);
+		$feature10 = (isset($decoded['feature10']) ? $decoded['feature10'] : null);		
 		$latLowerBound = (isset($decoded['latLowerBound']) ? $decoded['latLowerBound'] : null);
 		$latUpperBound = (isset($decoded['latUpperBound']) ? $decoded['latUpperBound'] : null);
 		$lonLowerBound = (isset($decoded['lonLowerBound']) ? $decoded['lonLowerBound'] : null);
 		$lonUpperBound = (isset($decoded['lonUpperBound']) ? $decoded['lonUpperBound'] : null);
-
+		
+		$images = (isset($decoded['images']) ? $decoded['images'] : null);
+		
+		$imageArray = $images[0];
+		$display_pic = $imageArray['image0'];
+		
+		$gift = FALSE;
+		
 		//check for nearby sites
 		$nearby = $db->nearbySiteExist($lat, $lon, $latLowerBound, $latUpperBound, $lonLowerBound, $lonUpperBound);
 		$size = sizeof($nearby);
         
+		
 		if($nearby[0] == null) {
 			$response["error"] = FALSE;
 			$response["size"] = 0;
 				
 			//store site
-			$site = $db->storeSite($email, $lat, $lon, $title, $description, $rating, $permission, $distantTerrain, $nearbyTerrain, $immediateTerrain, $feature1, $feature2, $feature3, $feature4, $feature5, $feature6, $feature7, $feature8, $feature9, $feature10);
+			$site = $db->storeSite($email, $lat, $lon, $title, $description, $classification, $rating, $permission, $distantTerrain, $nearbyTerrain, $immediateTerrain, $feature1, $feature2, $feature3, $feature4, $feature5, $feature6, $feature7, $feature8, $feature9, $feature10, $display_pic);
 			
 			$ucid = $site["unique_cid"];
 			
 			//link site to user
-			$link = $db->linkSiteToOwner($uid, $ucid, $relat, $rating);
+			$link = $db->linkSiteToOwner($uid, $ucid, $relat, $gift, $rating);
 			
-			if($image1){
-				$data = $db->addImages($image1, $image2, $image3, $ucid);
+			$imagesNum = sizeof($images);		
+				
+			if($imagesNum > 0){
+					
+				$j = 0;
+				foreach($images as $i => $image){
+										
+					$imageData = $db->addImages($image['image'.$j.''], $ucid);
+					$j++;
+					
+					if(!$imageData){
+						//site failed to store image
+						$response["error"] = TRUE;
+						$response["error_msg"] = "Error occured in storing image!";
+					}
+				}
 			}
-			
+												
 			if ($site && $link) {
+				
 				//site stored successfully
 				$response["cid"] = $site["unique_cid"];
 				$response["site"]["site_admin"] = $site["site_admin"];
@@ -154,8 +196,8 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 				$response["site"]["lon"] = $site["longitude"];
 				$response["site"]["title"] = $site["title"];
 				$response["site"]["description"] = $site["description"];
+				$response["site"]["classification"] = $site["classification"];
 				$response["site"]["rating"] = $link["rating"];
-
 				$response["site"]["permission"] = $site["permission"];
 				$response["site"]["distantTerrain"] = $site["distantTerrain"];
 				$response["site"]["nearbyTerrain"] = $site["nearbyTerrain"];
@@ -173,8 +215,11 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 				$response["site"]["feature10"] = $site["feature10"];
 				$response["site"]["created_at"] = $site["created_at"];
 				$response["site"]["updated_at"] = $site["updated_at"];
-				$response["site"]["image"] = $data["image"];
-
+				
+				if($imagesNum > 0){
+					$response["site"]["images"] = $imagesNum;
+				}
+				
 				echo json_encode($response);
 				
 			} else if(!$site) {
@@ -188,10 +233,11 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 				$response["error_msg"] = "Error occured in linking site to user!";
 				echo json_encode($response);
 			} else {
-			
-			
+				$response["error"] = TRUE;
+				$response["error_msg"] = "Dunno!";
+				
+				echo json_encode($response);
 			}
-			
 			
 		} else if ($size > 0) {
             // site found
@@ -202,7 +248,7 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 				$response["site$i"] = $nearby[$i];
 			}
             echo json_encode($response);
-        }
+        } 
 		
 	} else if ($tag == 'knownSites') {
 	
@@ -223,8 +269,10 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 			$response["size"] = $size;
 			for($i = 0; $i<$size; $i++){
 				$ratings = $db->fetchRatings($known[$i]["unique_cid"]);
+				$numOwn = $db->fetchOwners($known[$i]["unique_cid"]);
 								
 				$response["site$i"] = $known[$i];
+				$response["site$i"]["num_owners"] = $numOwn;
 				$response["site$i"]["avr_rating"] = $ratings[0];
 				$response["site$i"]["no_of_raters"] = $ratings[1];
 			}
@@ -247,12 +295,22 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 		$images = $db->fetchImages($cid);
 		$sizeImages = sizeof($images);
 		
-		$response["images"] = $images;
+		//echo $images;
+		//echo $sizeImages;
+				
+		if($images == FALSE) {
+			$response["error"] = TRUE;
+			$response["error_msg"] = "Error fetching images for this site!!";
+		} else if($sizeImages == 0){
+			$response["error"] = TRUE;
+			$response["error_msg"] = "Zero images for this site!!";
+		} else {
+			$response["error"] = FALSE;
+			$response["images"] = $images;
+		}			
 		
 		echo json_encode($response);
-		
-		//echo $sizeImages;
-		
+				
 	} else if ($tag == 'unknownSites') {
 	
 		//request type is fetch knownSites
@@ -264,9 +322,6 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 		$unknown = $db->fetchUnknownSites($uid, $relatOwn, $relatTrade);
 		$size = sizeof($unknown);
 		
-
-		
-        
 		if($unknown[0] == null){
 			$response["error"] = FALSE;
 			$response["size"] = 0;
@@ -401,6 +456,7 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 		$receive_cid = (isset($decoded['receive_cid']) ? $decoded['receive_cid'] : null);
 		
 		$relat = 45;
+		$gift = false;
 		
 		if($tradeStatus == 2){
 		
@@ -408,7 +464,7 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 			
 			if($check){
 			
-				$linkReceiver = $db->linkSiteToOwner($receiver_uid, $send_cid, $relat);
+				$linkReceiver = $db->linkSiteToOwner($receiver_uid, $send_cid, $relat, $gift, NULL);
 				
 				if ($linkReceiver) {
 					//link made successfully
@@ -424,7 +480,9 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 				}
 			}
 			
-			$linkSender = $db->linkSiteToOwner($sender_uid, $receive_cid, $relat);
+			$linkSender = $db->linkSiteToOwner($sender_uid, $receive_cid, $relat, $gift, NULL);
+			
+			$updateNumTrades = $db->updateNumTrades($sender_uid, $receiver_uid);
 			
 			if ($linkSender) {
 				//link made successfully
@@ -598,6 +656,7 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 			$response["name"] = $ans["name"];
 			$response["email"] = $ans["email"];
 			$response["bio"] = $ans["bio"];		
+			$response["why"] = $ans["why"];		
 			$response["profile_pic"] = $ans["profile_pic"];
 			for($i = 0; $i<$size; $i++){
 			$j = $i+1;
@@ -614,19 +673,9 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 	} else if ($tag == 'answers') {
 	
 		$uid = (isset($decoded['uid']) ? $decoded['uid'] : null);
-		$question1 = (isset($decoded['question1']) ? $decoded['question1'] : null);
-		$question2 = (isset($decoded['question2']) ? $decoded['question2'] : null);
-		$question3 = (isset($decoded['question3']) ? $decoded['question3'] : null);
-		$question4 = (isset($decoded['question4']) ? $decoded['question4'] : null);
-		$question5 = (isset($decoded['question5']) ? $decoded['question5'] : null);
-		$question6 = (isset($decoded['question6']) ? $decoded['question6'] : null);
-		$question7 = (isset($decoded['question7']) ? $decoded['question7'] : null);
-		$question8 = (isset($decoded['question8']) ? $decoded['question8'] : null);
-		$question9 = (isset($decoded['question9']) ? $decoded['question9'] : null);
+		$answers = (isset($decoded['answers']) ? $decoded['answers'] : null);
 
-
-
-		$data = $db->updateAnswers($uid, $question1, $question2, $question3, $question4, $question5, $question6, $question7, $question8, $question9);
+		$data = $db->updateAnswers($uid, $answers);
 		
 		if($data){
 			$response["error"] = FALSE;
@@ -655,21 +704,176 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 	} else if($tag == 'updateProfile'){
 
 		$uid = (isset($decoded['uid']) ? $decoded['uid'] : null);
+		$userType = (isset($decoded['userType']) ? $decoded['userType'] : null);
 		$bio = (isset($decoded['bio']) ? $decoded['bio'] : null);
+		$why = (isset($decoded['why']) ? $decoded['why'] : null);
 		$profile_pic = (isset($decoded['profile_pic']) ? $decoded['profile_pic'] : null);
+		$cover_pic = (isset($decoded['cover_pic']) ? $decoded['cover_pic'] : null);
 		
-		$data = $db->updateProfile($uid, $bio, $profile_pic);
+		$data = $db->updateProfile($uid, $userType, $bio, $why, $profile_pic, $cover_pic);
 		
 		if($data){
-			$response["error"] = FALSE;
-			echo json_encode($response);
+
+			$badges = $db->setUpBadges($uid);
+
+			if($badges){
+				
+				$response["error"] = FALSE;
+				$response["badges"] = $badges;
+				echo json_encode($response);
+				
+			} else {
+				$response["error"] = TRUE;
+				$response["error_msg"] = "Error occured in setting up badges";
+				echo json_encode($response);
+			}
+			
 		} else {
 			$response["error"] = TRUE;
 			$response["error_msg"] = "Error updating profile!";
 			echo json_encode($response);
 		}
 	
-	}	else {
+	} else if($tag == 'giftSite'){
+
+		$uid = (isset($decoded['uid']) ? $decoded['uid'] : null);
+		$cid = (isset($decoded['cid']) ? $decoded['cid'] : null);
+
+		$relat = 45;
+		$gift = true;
+		
+		$data = $db->linkSiteToOwner($uid, $cid, $relat, $gift, NULL);
+		
+		if($data){
+			
+			$response["error"] = FALSE;
+			echo json_encode($response);
+		} else {
+			
+			$response["error"] = TRUE;
+			$response["error_msg"] = "Error gifting site to user!";
+			echo json_encode($response);
+		}
+
+	
+	} else if($tag == 'allUsers'){
+		
+		$boolAllUsers = (isset($decoded['boolAllUsers']) ? $decoded['boolAllUsers'] : null);
+		$userArray = (isset($decoded['someUsers']) ? $decoded['someUsers'] : null);
+		
+		if($boolAllUsers == "true"){
+						
+			$data = $db->allUsers();
+					
+			$size = sizeof($data);
+
+			if($data[0] == null){
+				$response["error"] = FALSE;
+				$response["size"] = 0;
+				echo json_encode($response);
+			} else if ($data) {
+				
+				// users found
+				$response["error"] = FALSE;
+				$response["size"] = $size;
+				for($i = 0; $i<$size; $i++){
+									
+					$response["user$i"] = $data[$i];
+				}
+				echo json_encode($response);
+			} else {
+				//users not found
+				$response["error"] = TRUE;
+				$response["error_msg"] = "Error fetching all users!";
+				echo json_encode($response);
+			}
+		} else {
+						
+			$data = $db->someUsers($userArray);	
+			//$result = $db->fetchMultipleBadges($userArray);
+						
+			$size = sizeof($data);
+		
+			if($data[0] == null){
+				$response["error"] = FALSE;
+				$response["size"] = 0;
+				echo json_encode($response);
+			} else if ($data) {
+				
+				// users found
+				$response["error"] = FALSE;
+				$response["size"] = $size;
+				for($i = 0; $i<$size; $i++){
+					
+					$result = $db->fetchBadges($data[$i]["unique_uid"]);
+									
+					$response["user$i"] = $data[$i];
+					$response["user$i"]["badges"] = $result;
+				}
+				echo json_encode($response);
+			} else {
+				//users not found
+				$response["error"] = TRUE;
+				$response["error_msg"] = "Error fetching some users!";
+				echo json_encode($response);
+			}
+		}
+		
+	} else if($tag == 'vouch'){
+		
+		$email = (isset($decoded['email']) ? $decoded['email'] : null);
+
+		$data = $db->vouchUser($email);
+
+		if($data) {
+            $response["error"] = FALSE;
+            echo json_encode($response);
+			
+		} else {
+			$response["error"] = TRUE;
+			$response["error_msg"] = "Error with vouch system!";
+			echo json_encode($response);
+		}
+				
+	} else if($tag == 'updateBadges'){
+		
+		$uid = (isset($decoded['uid']) ? $decoded['uid'] : null);
+		$badges = (isset($decoded['badges']) ? $decoded['badges'] : null);
+
+		$someArray = json_decode($badges, true);
+		
+		$result = $db->updateBadges($uid, $someArray);
+		
+		if($result) {
+            $response["error"] = FALSE;
+			$response["badges"] = $result;
+            echo json_encode($response);
+			
+		} else {
+			$response["error"] = TRUE;
+			$response["error_msg"] = "Error updating badges!";
+			echo json_encode($response);
+		}
+
+		
+	} else if($tag == 'report'){
+
+		$uid = (isset($decoded['uid']) ? $decoded['uid'] : null);
+		$cid = (isset($decoded['cid']) ? $decoded['cid'] : null);
+		
+		$result = $db->reportSite($uid, $cid);
+		
+		if($result) {
+            $response["error"] = FALSE;
+            echo json_encode($response);
+			
+		} else {
+			$response["error"] = TRUE;
+			$response["error_msg"] = "Error reporting site!";
+			echo json_encode($response);
+		}
+	
+	} else {
         // request failed
         $response["error"] = TRUE;
         $response["error_msg"] = "Unknown 'tag' value.";
@@ -682,4 +886,5 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 	$response["content"] = $decoded['tag'];
     echo json_encode($response);
 }
+
 ?>
