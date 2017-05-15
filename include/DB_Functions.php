@@ -21,12 +21,12 @@ class DB_Functions {
     /**
      * Store user details
      */
-    public function storeUser($name, $token, $email, $password) {
+    public function storeUser($name, $token, $email, $password, $country) {
         $uuid = uniqid('', true);
         $hash = $this->hashSSHA($password);
         $encrypted_password = $hash["encrypted"]; // encrypted password
         $salt = $hash["salt"]; // salt
-        $result = mysqli_query($this->db->con,"INSERT INTO users(unique_uid, token, name, email, encrypted_password, salt, created_at) VALUES('$uuid', '$token', '$name', '$email', '$encrypted_password', '$salt', NOW())");
+        $result = mysqli_query($this->db->con,"INSERT INTO users(unique_uid, token, country, name, email, encrypted_password, salt, created_at) VALUES('$uuid', '$token', '$country', '$name', '$email', '$encrypted_password', '$salt', NOW())");
         // check for result
         if ($result) {
             // gettig the details
@@ -582,7 +582,7 @@ class DB_Functions {
 	
 	public function allUsers(){
 		
-		$result = mysqli_query($this->db->con, "SELECT name, email, unique_uid, profile_pic FROM users WHERE token != '' ");
+		$result = mysqli_query($this->db->con, "SELECT name, email, unique_uid, profile_pic, country FROM users WHERE token != '' ");
 
 		// check for result 
         $no_of_rows = mysqli_num_rows($result);

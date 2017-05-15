@@ -83,6 +83,7 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 		$token = (isset($decoded['token']) ? $decoded['token'] : null);
 		$email = (isset($decoded['email']) ? $decoded['email'] : null);
 		$password = (isset($decoded['password']) ? $decoded['password'] : null);
+		$country = (isset($decoded['country']) ? $decoded['country'] : null);
  
         // check if user is already existed
         if ($db->isUserExisted($email)) {
@@ -92,13 +93,14 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
             echo json_encode($response);
         } else {
             // store user
-            $user = $db->storeUser($name, $token, $email, $password);
+            $user = $db->storeUser($name, $token, $email, $password, $country);
 			
             if ($user) {				
 				// user stored successfully
 				$response["error"] = FALSE;
 				$response["uid"] = $user["unique_uid"];
 				$response["user"]["token"] = $user["token"];
+				$response["user"]["country"] = $user["country"];
 				$response["user"]["name"] = $user["name"];
 				$response["user"]["email"] = $user["email"];
 				$response["user"]["created_at"] = $user["created_at"];
@@ -741,7 +743,7 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 		$cid = (isset($decoded['cid']) ? $decoded['cid'] : null);
 
 		$relat = 45;
-		$gift = true;
+		$gift = TRUE;
 		
 		$result = $db->linkSiteToOwner($uid, $cid, $relat, $gift, NULL);
 		
