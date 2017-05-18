@@ -140,21 +140,10 @@ class DB_Functions {
         }
 	}
 	
-	public function linkSiteToOwner($uid, $ucid, $relat, $gift, $rating){
+	public function linkSiteToOwner($uid, $ucid, $relat, $rating){
 		$uoid = uniqid('', true);
-		
-		if($rating == NULL){
-		
-				$JNCT = mysqli_query($this->db->con,"INSERT INTO user_has_campsites(unique_oid, user_fk, campsite_fk, relationship, created_at, active) VALUES('$uoid', '$uid', '$ucid', '$relat', NOW(), 1)");
-		} else {		
 			
-			$JNCT = mysqli_query($this->db->con,"INSERT INTO user_has_campsites(unique_oid, user_fk, campsite_fk, relationship, created_at, active, rating) VALUES('$uoid', '$uid', '$ucid', '$relat', NOW(), 1, '$rating')");
-		}
-		
-		if($gift){
-			
-			$addGift = mysqli_query($this->db->con, "UPDATE users SET gifted = gifted+1 WHERE unique_uid = '$uid'");
-		}
+		$JNCT = mysqli_query($this->db->con,"INSERT INTO user_has_campsites(unique_oid, user_fk, campsite_fk, relationship, created_at, active, rating) VALUES('$uoid', '$uid', '$ucid', '$relat', NOW(), 1, '$rating')");
 		
 		// check for result
         if ($JNCT) {
@@ -243,12 +232,19 @@ class DB_Functions {
 	
 	public function fetchToken($cid){
 	
-		$result = mysqli_query($this->db->con, "SELECT token FROM users INNER JOIN user_has_campsites ON user_has_campsites.campsite_fk = campsites.unique_cid INNER JOIN users ON users.unique_uid = user_has_campsites.user_fk WHERE ((user_has_campsites.campsite_fk != '$cid' AND user_has_campsites.relationship = '90') OR (user_has_campsites.campsite_fk != '$cid' AND user_has_campsites.relationship != '45')) AND user_has_campsites.active = '1' AND campsites.active = '1'");
-		
-		if($result){
-			return $result;
-        } else {
-            return "null";
+		$result = mysqli_query($this->db->con, "SELECT token FROM users INNER JOIN user_has_campsites ON users.unique_uid = user_has_campsites.user_fk WHERE user_has_campsites.campsite_fk = '$cid' AND user_has_campsites.relationship = '90'");
+				
+		$no_of_rows = mysqli_num_rows($result);
+
+        if ($no_of_rows > 0) {
+            while ($row = $result->fetch_assoc()) {
+				$new_array[] = $row;
+			}	
+			return $new_array;
+        } else if ($no_of_rows == 0){
+			return true;
+		} else {
+            return false;
         }
 	}
 	
@@ -713,6 +709,17 @@ class DB_Functions {
 
 		if($result){
 			return $result;
+		} else {
+			return false;
+		}
+	}
+	
+	public function updateUserGifted($uid){
+			
+		$addGift = mysqli_query($this->db->con, "UPDATE users SET gifted = gifted+1 WHERE unique_uid = '$uid'");
+		
+		if($addGift){
+			return true;
 		} else {
 			return false;
 		}

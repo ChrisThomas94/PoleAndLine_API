@@ -151,9 +151,7 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 		
 		$imageArray = $images[0];
 		$display_pic = $imageArray['image0'];
-		
-		$gift = FALSE;
-		
+				
 		//check for nearby sites
 		$nearby = $db->nearbySiteExist($lat, $lon, $latLowerBound, $latUpperBound, $lonLowerBound, $lonUpperBound);
 		$size = sizeof($nearby);
@@ -169,7 +167,7 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 			$ucid = $site["unique_cid"];
 			
 			//link site to user
-			$link = $db->linkSiteToOwner($uid, $ucid, $relat, $gift, $rating);
+			$link = $db->linkSiteToOwner($uid, $ucid, $relat, $rating);
 			
 			$imagesNum = sizeof($images);		
 				
@@ -458,7 +456,6 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 		$receive_cid = (isset($decoded['receive_cid']) ? $decoded['receive_cid'] : null);
 		
 		$relat = 45;
-		$gift = false;
 		
 		if($tradeStatus == 2){
 		
@@ -466,7 +463,7 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 			
 			if($check){
 			
-				$linkReceiver = $db->linkSiteToOwner($receiver_uid, $send_cid, $relat, $gift, NULL);
+				$linkReceiver = $db->linkSiteToOwner($receiver_uid, $send_cid, $relat, NULL);
 				
 				if ($linkReceiver) {
 					//link made successfully
@@ -482,7 +479,7 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 				}
 			}
 			
-			$linkSender = $db->linkSiteToOwner($sender_uid, $receive_cid, $relat, $gift, NULL);
+			$linkSender = $db->linkSiteToOwner($sender_uid, $receive_cid, $relat, NULL);
 			
 			$updateNumTrades = $db->updateNumTrades($sender_uid, $receiver_uid);
 			
@@ -741,13 +738,18 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 
 		$uid = (isset($decoded['uid']) ? $decoded['uid'] : null);
 		$cid = (isset($decoded['cid']) ? $decoded['cid'] : null);
+		$send_uid = (isset($decoded['send_uid']) ? $decoded['send_uid'] : null);
 
 		$relat = 45;
-		$gift = TRUE;
+		$rating = 0;
 		
-		$result = $db->linkSiteToOwner($uid, $cid, $relat, $gift, NULL);
+		$result = $db->linkSiteToOwner($uid, $cid, $relat, $rating);
 		
+		$gifted = $db->updateUserGifted($send_uid);
 		
+		//$response = $result
+		//echo json_encode($response);
+				
 		if($result){
 			
 			$response["error"] = FALSE;
