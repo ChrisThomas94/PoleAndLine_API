@@ -160,7 +160,7 @@ class DB_Functions {
 	
 	public function updateNumTrades($sender_uid, $receiver_uid){
 		
-		$result = mysqli_query($this->db->con, "UPDATE users SET numSites = numSites+1 WHERE unique_uid IN ('$sender_uid', '$receiver_uid')");
+		$result = mysqli_query($this->db->con, "UPDATE users SET numTrades = numTrades+1 WHERE unique_uid IN ('$sender_uid', '$receiver_uid')");
 
 		if($result){
 			return true;
@@ -310,7 +310,7 @@ class DB_Functions {
 	
 	public function updateTrade($tid, $tradeStatus){
 	
-		$result = mysqli_query($this->db->con, "UPDATE trades SET status = '$tradeStatus' WHERE unique_tid = '$tid'");
+		$result = mysqli_query($this->db->con, "UPDATE trades SET status = '$tradeStatus', updated_at = NOW() WHERE unique_tid = '$tid'");
 		
 		if($result) {
 			return true;
@@ -350,7 +350,7 @@ class DB_Functions {
 	
 	public function fetchImages($unique_cid){
 
-		$result = mysqli_query($this->db->con, "SELECT iid, image1 FROM images_of_campsites INNER JOIN user_has_campsites ON user_has_campsites.campsite_fk = images_of_campsites.campsite_fk WHERE images_of_campsites.campsite_fk = '$unique_cid' AND images_of_campsites.active = '1'");
+		$result = mysqli_query($this->db->con, "SELECT iid, image1 FROM images_of_campsites WHERE images_of_campsites.campsite_fk = '$unique_cid' AND images_of_campsites.active = '1'");
 	
 		// check for result 
         $no_of_rows = mysqli_num_rows($result);
@@ -358,6 +358,7 @@ class DB_Functions {
 		//echo $no_of_rows;
 		
         if ($no_of_rows > 0) {
+			//while($row = $result->fetch_array(MYSQL_ASSOC)){
 		
             while ($row = $result->fetch_assoc()) {
 				$new_array[] = $row;
@@ -443,7 +444,7 @@ class DB_Functions {
 	
 	public function fetchRatings($unique_cid){
 	
-		$result = mysqli_query($this->db->con, "SELECT rating FROM user_has_campsites WHERE campsite_fk = '$unique_cid' AND active = '1' AND relationship = '45' AND rating IS NOT NULL");
+		$result = mysqli_query($this->db->con, "SELECT rating FROM user_has_campsites WHERE campsite_fk = '$unique_cid' AND active = '1' AND relationship = '45' AND updated_at != '0000-00-00'");
 	
 		$no_of_rows = mysqli_num_rows($result);
 		
@@ -499,26 +500,7 @@ class DB_Functions {
 			return false;
 		}
 	}
-	
-	public function getQuestions(){
-	
-		$result = mysqli_query($this->db->con, "SELECT question, answer1, answer2, answer3, answer4 FROM questions WHERE active = '1'");
 
-		// check for result 
-        $no_of_rows = mysqli_num_rows($result);
-		
-        if ($no_of_rows > 0) {
-		
-            while ($row = $result->fetch_assoc()) {
-				$new_array[] = $row;
-			}	
-			return $new_array;
-        } else if ($no_of_rows == 0){
-			return true;
-		} else {
-            return false;
-        }
-	}
 	
 	public function getUserDetails($email){
 	
@@ -634,12 +616,7 @@ class DB_Functions {
 		$result = mysqli_query($this->db->con,"INSERT INTO user_has_badges(user_fk, created_at) VALUES('$uid', NOW())");
 		
 		if($result){
-			$result = mysqli_query($this->db->con,"SELECT * FROM user_has_badges WHERE(user_fk = '$uid')");
-			
-			$row = $result->fetch_array(MYSQL_ASSOC);
-			//$myArray[] = $row;
-			return $row;
-			
+			return true;
         } else {
             return false;
         }
@@ -724,6 +701,42 @@ class DB_Functions {
 			return false;
 		}
 		
+	}
+	
+	public function updateTrades($uid, $cid, $send_uid){
+		
+		$acceptTrades = mysqli_query($this->db->con, "UPDATE trades SET status = '2', updated_at = NOW() WHERE (reciever_uid_fk = '$uid' OR sender_uid_fk = '$uid') AND (send_cid_fk = '$cid' OR recieve_cid_fk = '$cid') AND status = '0'");
+		
+		if($acceptTrades){
+			true;
+		} else {
+			return false;
+		}
+	}
+	
+	public function checkIfAlreadyOwned($reciever_uid_fk, $send_cid){
+		
+		$owned = mysqli_query($this->db->con, "SELECT * FROM user_has_campsites WHERE user_fk = '$reciever_uid_fk' AND campsite_fk = '$send_cid'");
+		
+		// check for result 
+        $no_of_rows = mysqli_num_rows($owned);
+		
+		if ($no_of_rows > 0) {
+			return true;
+		} else {
+            return false;
+        }
+	}
+	
+	public function updateSites($uid){
+				
+		$numSites = mysqli_query($this->db->con, "UPDATE users SET numSites = numSites+1 WHERE unique_uid = '$uid'");
+
+		if($numSites){
+			true;
+		} else {
+			return false;
+		}
 	}
 }
 ?>

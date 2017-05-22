@@ -61,6 +61,7 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
             $response["user"]["vouch"] = $user["vouch"];
             $response["user"]["gifted"] = $user["gifted"];
             $response["user"]["reported"] = $user["reported"];
+            $response["user"]["country"] = $user["country"];
 			
 			for($i = 1; $i<=9; $i++){
 				$response["user"]["answer$i"] = $user["question$i"];
@@ -95,7 +96,9 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
             // store user
             $user = $db->storeUser($name, $token, $email, $password, $country);
 			
-            if ($user) {				
+            if ($user) {	
+				$badges = $db->setUpBadges($user["unique_uid"]);
+
 				// user stored successfully
 				$response["error"] = FALSE;
 				$response["uid"] = $user["unique_uid"];
@@ -168,6 +171,8 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 			
 			//link site to user
 			$link = $db->linkSiteToOwner($uid, $ucid, $relat, $rating);
+			
+			$updateSites = $db->updateSites($uid);
 			
 			$imagesNum = sizeof($images);		
 				
@@ -370,7 +375,15 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 		//check for duplicate trade request
 		$duplicateTrade = $db->checkForExistingTrade($uid, $tradeStatus, $reciever_uid_fk, $send_cid, $recieve_cid);
 
-		if($duplicateTrade) {
+		$alreadyOwned = $db->checkIfAlreadyOwned($reciever_uid_fk, $send_cid);
+		
+		if($alreadyOwned){
+			//error message
+			$response["error"] = TRUE;
+			$response["error_msg"] = "This user already knows of this location!";
+			echo json_encode($response);
+			
+		}else if($duplicateTrade) {
 			//error message
 			$response["error"] = TRUE;
 			$response["error_msg"] = "Duplicate trade!";
@@ -714,7 +727,7 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 		
 		if($data){
 
-			$badges = $db->setUpBadges($uid);
+			$badges = $db->fetchBadges($uid);
 
 			if($badges){
 				
@@ -736,29 +749,44 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 	
 	} else if($tag == 'giftSite'){
 
+		$send_uid = (isset($decoded['send_uid']) ? $decoded['send_uid'] : null);
 		$uid = (isset($decoded['uid']) ? $decoded['uid'] : null);
 		$cid = (isset($decoded['cid']) ? $decoded['cid'] : null);
-		$send_uid = (isset($decoded['send_uid']) ? $decoded['send_uid'] : null);
 
 		$relat = 45;
 		$rating = 0;
 		
-		$result = $db->linkSiteToOwner($uid, $cid, $relat, $rating);
+		$alreadyOwned = $db->checkIfAlreadyOwned($uid, $cid);
 		
-		$gifted = $db->updateUserGifted($send_uid);
-		
-		//$response = $result
-		//echo json_encode($response);
-				
-		if($result){
-			
-			$response["error"] = FALSE;
-			echo json_encode($response);
-		} else {
-			
+		if($alreadyOwned){
+			//error message
 			$response["error"] = TRUE;
-			$response["error_msg"] = "Error gifting site to user!";
+			$response["error_msg"] = "This user already knows of this location!";
 			echo json_encode($response);
+			
+		} else {
+		
+			$result = $db->linkSiteToOwner($uid, $cid, $relat, $rating);
+			
+			$gifted = $db->updateUserGifted($send_uid);
+			
+			$updateTrades = $db->updateTrades($uid, $cid, $send_uid);
+			
+			$updateSites = $db->updateSites($uid);
+			
+			//$response = $result
+			//echo json_encode($response);
+					
+			if($result){
+				
+				$response["error"] = FALSE;
+				echo json_encode($response);
+			} else {
+				
+				$response["error"] = TRUE;
+				$response["error_msg"] = "Error gifting site to user!";
+				echo json_encode($response);
+			}
 		}
 
 	
