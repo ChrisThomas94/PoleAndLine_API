@@ -101,23 +101,22 @@ class DB_Functions {
         return $hash;
     }
 	
-	public function storeSite($email, $lat, $lon, $title, $description, $classification, $rating, $permission, $distant, $nearby, $immediate, $feature1, $feature2, $feature3, $feature4, $feature5, $feature6, $feature7, $feature8, $feature9, $feature10, $display_pic){
+	public function storeSite($email, $lat, $lon, $title, $description, $classification, $suited, $display_pic){
+				
 		$ucid = uniqid('', true);
-        $result = mysqli_query($this->db->con,"INSERT INTO campsites(unique_cid, site_admin, latitude, longitude, title, description, classification, rating, created_at, permission, distantTerrain, nearbyTerrain, immediateTerrain, feature1, feature2, feature3, feature4, feature5, feature6, feature7, feature8, feature9, feature10, display_pic, active) VALUES('$ucid', '$email', '$lat', '$lon', '$title', '$description', '$classification', '$rating', NOW(), $permission,'$distant','$nearby', '$immediate', $feature1, $feature2, $feature3, $feature4, $feature5, $feature6, $feature7, $feature8, $feature9, $feature10, '$display_pic', '1')");
+        $result = mysqli_query($this->db->con,"INSERT INTO campsites(unique_cid, site_admin, latitude, longitude, title, description, classification, suited, created_at, display_pic, active) VALUES('$ucid', '$email', '$lat', '$lon', '$title', '$description', '$classification', '$suited', NOW(), '$display_pic', '1')");
 		
         // check for result
         if ($result) {
             // gettig the details
             $cid = mysqli_insert_id($this->db->con); // last inserted id
 			
-			
             $result = mysqli_query($this->db->con,"SELECT * FROM campsites WHERE cid = $cid");
             
 			// return details
             return mysqli_fetch_array($result);
         } else {
-			echo $cid;
-            return false;
+			return false;
         }
 	}
 	
@@ -186,7 +185,7 @@ class DB_Functions {
 	
 	public function fetchSites($uid, $relat){
 		
-		$result = mysqli_query($this->db->con, "SELECT unique_cid, site_admin, latitude, longitude, title, description, classification, campsites.rating, permission, distantTerrain, nearbyTerrain, immediateTerrain, feature1, feature2, feature3, feature4, feature5, feature6, feature7, feature8, feature9, feature10, display_pic FROM campsites INNER JOIN user_has_campsites ON user_has_campsites.campsite_fk = campsites.unique_cid INNER JOIN users ON users.unique_uid = user_has_campsites.user_fk WHERE user_has_campsites.user_fk = '$uid' AND user_has_campsites.active = '1' AND campsites.active = '1'");
+		$result = mysqli_query($this->db->con, "SELECT unique_cid, site_admin, latitude, longitude, title, description, classification, suited, campsites.rating, permission, distantTerrain, nearbyTerrain, immediateTerrain, feature1, feature2, feature3, feature4, feature5, feature6, feature7, feature8, feature9, feature10, display_pic FROM campsites INNER JOIN user_has_campsites ON user_has_campsites.campsite_fk = campsites.unique_cid INNER JOIN users ON users.unique_uid = user_has_campsites.user_fk WHERE user_has_campsites.user_fk = '$uid' AND user_has_campsites.active = '1' AND campsites.active = '1'");
 		
 		//echo $result;
 		
@@ -213,7 +212,7 @@ class DB_Functions {
 	
 	public function fetchUnknownSites($uid, $relatOwn, $relatTrade){
 		
-		$result = mysqli_query($this->db->con, "SELECT longitude, latitude, unique_cid, title, description, classification, campsites.rating, feature1, feature2, feature3, feature4, feature5, feature6, feature7, feature8, feature9, feature10, site_admin FROM campsites INNER JOIN user_has_campsites ON user_has_campsites.campsite_fk = campsites.unique_cid INNER JOIN users ON users.unique_uid = user_has_campsites.user_fk WHERE ((user_has_campsites.user_fk != '$uid' AND user_has_campsites.relationship = '90') OR (user_has_campsites.user_fk != '$uid' AND user_has_campsites.relationship != '45')) AND user_has_campsites.active = '1' AND campsites.active = '1'");
+		$result = mysqli_query($this->db->con, "SELECT longitude, latitude, unique_cid, title, description, classification, suited, campsites.rating, feature1, feature2, feature3, feature4, feature5, feature6, feature7, feature8, feature9, feature10, site_admin FROM campsites INNER JOIN user_has_campsites ON user_has_campsites.campsite_fk = campsites.unique_cid INNER JOIN users ON users.unique_uid = user_has_campsites.user_fk WHERE ((user_has_campsites.user_fk != '$uid' AND user_has_campsites.relationship = '90') OR (user_has_campsites.user_fk != '$uid' AND user_has_campsites.relationship != '45')) AND user_has_campsites.active = '1' AND campsites.active = '1'");
 		
         // check for result 
         $no_of_rows = mysqli_num_rows($result);
@@ -233,14 +232,14 @@ class DB_Functions {
 	public function fetchToken($cid){
 	
 		$result = mysqli_query($this->db->con, "SELECT token FROM users INNER JOIN user_has_campsites ON users.unique_uid = user_has_campsites.user_fk WHERE user_has_campsites.campsite_fk = '$cid' AND user_has_campsites.relationship = '90'");
-				
+						
 		$no_of_rows = mysqli_num_rows($result);
 
         if ($no_of_rows > 0) {
             while ($row = $result->fetch_assoc()) {
 				$new_array[] = $row;
 			}	
-			return $new_array;
+			return $new_array[0];
         } else if ($no_of_rows == 0){
 			return true;
 		} else {
@@ -248,11 +247,11 @@ class DB_Functions {
         }
 	}
 	
-	public function createRequest($uid, $tradeStatus, $send_fk, $recieve_fk, $reciever_fk){
+	public function createRequest($uid, $tradeStatus, $tradeLocation, $send_fk, $recieve_fk, $reciever_fk){
 	
 		$utid = uniqid('', true);
 		
-		$result = mysqli_query($this->db->con, "INSERT INTO trades (unique_tid, status, sender_uid_fk, reciever_uid_fk, send_cid_fk, recieve_cid_fk, created_at) VALUES ('$utid', '$tradeStatus', '$uid', '$reciever_fk', '$send_fk', '$recieve_fk', NOW())");
+		$result = mysqli_query($this->db->con, "INSERT INTO trades (unique_tid, status, location, sender_uid_fk, reciever_uid_fk, send_cid_fk, recieve_cid_fk, created_at) VALUES ('$utid', '$tradeStatus', '$tradeLocation', '$uid', '$reciever_fk', '$send_fk', '$recieve_fk', NOW())");
 	
 		if ($result) {
             
@@ -405,9 +404,9 @@ class DB_Functions {
 	
 	}
 	
-	public function updateSite($cid, $title, $description, $feature1, $feature2, $feature3, $feature4, $feature5, $feature6, $feature7, $feature8, $feature9, $feature10){
+	public function updateSite($cid, $title, $description, $classification){
 	
-		$result = mysqli_query($this->db->con, "UPDATE campsites SET title = '$title', description = '$description', updated_at = NOW(), feature1 = $feature1, feature2 = $feature2, feature3 = $feature3, feature4 = $feature4, feature5 = $feature5, feature6 = $feature6, feature7 = $feature7, feature8 = $feature8, feature9 = $feature9, feature10 = $feature10  WHERE unique_cid = '$cid'");
+		$result = mysqli_query($this->db->con, "UPDATE campsites SET title = '$title', description = '$description', updated_at = NOW(), classification = '$classification' WHERE unique_cid = '$cid'");
 	
 		if($result) {
 			return true;
@@ -515,7 +514,7 @@ class DB_Functions {
 	
 	public function updateAnswers($uid, $answers){
 	
-		$result = mysqli_query($this->db->con, "UPDATE users SET question1 = '$answers[0]', question2 = '$answers[1]', question3 = '$answers[2]', question4 = '$answers[3]', question5 = '$answers[4]', question6 = '$answers[5]', question7 = '$answers[6]', updated_at = NOW() WHERE unique_uid = '$uid'");
+		$result = mysqli_query($this->db->con, "UPDATE users SET question1 = '$answers[0]', question2 = '$answers[1]', question3 = '$answers[2]', question4 = '$answers[3]', question5 = '$answers[4]', question6 = '$answers[5]', question7 = '$answers[6]', question8 = '$answers[7]', question9 = '$answers[8]', updated_at = NOW() WHERE unique_uid = '$uid'");
 
 		if($result){
 			return true;
@@ -560,7 +559,7 @@ class DB_Functions {
 	
 	public function allUsers(){
 		
-		$result = mysqli_query($this->db->con, "SELECT name, email, unique_uid, profile_pic, country FROM users WHERE token != '' ");
+		$result = mysqli_query($this->db->con, "SELECT name, email, unique_uid, profile_pic, country, token, userType FROM users WHERE active = '1' AND token != '' ");
 
 		// check for result 
         $no_of_rows = mysqli_num_rows($result);
@@ -582,7 +581,7 @@ class DB_Functions {
 	public function someUsers($userArray){
 					
 		$users = join("','", $userArray); 					
-		$result = mysqli_query($this->db->con, "SELECT * FROM users WHERE email IN ('$users')");
+		$result = mysqli_query($this->db->con, "SELECT * FROM users WHERE email IN ('$users') AND active = '1'");
 					
 		// check for result 
         $no_of_rows = mysqli_num_rows($result);
@@ -708,7 +707,7 @@ class DB_Functions {
 		$acceptTrades = mysqli_query($this->db->con, "UPDATE trades SET status = '2', updated_at = NOW() WHERE (reciever_uid_fk = '$uid' OR sender_uid_fk = '$uid') AND (send_cid_fk = '$cid' OR recieve_cid_fk = '$cid') AND status = '0'");
 		
 		if($acceptTrades){
-			true;
+			return true;
 		} else {
 			return false;
 		}
@@ -733,10 +732,22 @@ class DB_Functions {
 		$numSites = mysqli_query($this->db->con, "UPDATE users SET numSites = numSites+1 WHERE unique_uid = '$uid'");
 
 		if($numSites){
-			true;
+			return true;
 		} else {
 			return false;
 		}
+	}
+	
+	public function refreshToken($uid, $token){
+		
+		$token = mysqli_query($this->db->con, "UPDATE users SET token = '$token', updated_at = NOW() WHERE unique_uid = '$uid'");
+
+		if($token){
+			return true;
+		} else {
+			return false;
+		}
+		
 	}
 }
 ?>

@@ -37,6 +37,7 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
         // Request type is check Login
         $email = (isset($decoded['email']) ? $decoded['email'] : null);
 		$password = (isset($decoded['password']) ? $decoded['password'] : null);
+		$token = (isset($decoded['token']) ? $decoded['token'] : null);
  
         // check for user
         $user = $db->getUserByEmailAndPassword($email, $password);
@@ -52,7 +53,22 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 			$response["user"]["bio"] = $user["bio"];
 			$response["user"]["why"] = $user["why"];
 			$response["user"]["verified"] = $user["verified"];
-			$response["user"]["token"] = $user["token"];
+			
+			if($user["token"] != $token){
+				//refresh token
+				$refreshToken = $db->refreshToken($user["unique_uid"], $token);
+				
+				if($refreshToken){
+					$response["user"]["token"] = $token;
+				} else {
+					$response["error"] = TRUE;
+					$response["error_msg"] = "Failed to update token!";
+					echo json_encode($response);
+				}
+			} else {
+				$response["user"]["token"] = $user["token"];
+			}
+			
 			$response["user"]["userType"] = $user["userType"];
 			$response["user"]["numSites"] = $user["numSites"];
 			$response["user"]["numTrades"] = $user["numTrades"];
@@ -69,7 +85,8 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 			
 			$response["user"]["profile_pic"] = $user["profile_pic"];
 			$response["user"]["cover_pic"] = $user["cover_pic"];
-			$response["badges"] = $badges;
+			$response["badges"] = $badges;		
+			
             echo json_encode($response);
         } else {
             // user not found
@@ -128,6 +145,7 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 		$title = (isset($decoded['title']) ? $decoded['title'] : null);
 		$description = (isset($decoded['description']) ? $decoded['description'] : null);
 		$classification = (isset($decoded['classification']) ? $decoded['classification'] : null);
+		$suited = (isset($decoded['suited']) ? $decoded['suited'] : null);
 		$rating = (isset($decoded['rating']) ? $decoded['rating'] : null);
 		
 		$permission = (isset($decoded['permission']) ? $decoded['permission'] : null);
@@ -162,13 +180,14 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 		
 		if($nearby[0] == null) {
 			$response["error"] = FALSE;
-			$response["size"] = 0;
+			$response["nearby"] = 0;
 				
 			//store site
-			$site = $db->storeSite($email, $lat, $lon, $title, $description, $classification, $rating, $permission, $distantTerrain, $nearbyTerrain, $immediateTerrain, $feature1, $feature2, $feature3, $feature4, $feature5, $feature6, $feature7, $feature8, $feature9, $feature10, $display_pic);
+			$site = $db->storeSite($email, $lat, $lon, $title, $description, $classification, $suited, $display_pic);
+		
 			
 			$ucid = $site["unique_cid"];
-			
+						
 			//link site to user
 			$link = $db->linkSiteToOwner($uid, $ucid, $relat, $rating);
 			
@@ -202,6 +221,7 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 				$response["site"]["title"] = $site["title"];
 				$response["site"]["description"] = $site["description"];
 				$response["site"]["classification"] = $site["classification"];
+				$response["site"]["suited"] = $site["suited"];
 				$response["site"]["rating"] = $link["rating"];
 				$response["site"]["permission"] = $site["permission"];
 				$response["site"]["distantTerrain"] = $site["distantTerrain"];
@@ -222,7 +242,7 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 				$response["site"]["updated_at"] = $site["updated_at"];
 				
 				if($imagesNum > 0){
-					$response["site"]["images"] = $imagesNum;
+					$response["site"]["images"] = $imageArray;
 				}
 				
 				echo json_encode($response);
@@ -340,10 +360,10 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 				
 				//get owner token
 				$token = $db->fetchToken($unknown[$i]['unique_cid']);
-				
+								
 				$response["site$i"]["pop"] = $pop;
 				$response["site$i"]["details"] = $unknown[$i];
-				$response["site$i"]["token"] = $token;
+				$response["site$i"]["token"] = $token["token"];
 			}
             echo json_encode($response);
         } else {
@@ -360,6 +380,7 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 		//request type is trade request
 		$uid = (isset($decoded['uid']) ? $decoded['uid'] : null);
 		$tradeStatus = (isset($decoded['tradeStatus']) ? $decoded['tradeStatus'] : null);
+		$tradeLocation = (isset($decoded['tradeLocation']) ? $decoded['tradeLocation'] : null);
 		$send_cid = (isset($decoded['send_cid']) ? $decoded['send_cid'] : null);
 		$recieve_cid = (isset($decoded['recieve_cid']) ? $decoded['recieve_cid'] : null);
 		
@@ -391,7 +412,7 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 		} else {
 
 			//create trade record
-			$tradeReq = $db->createRequest($uid, $tradeStatus, $send_cid, $recieve_cid, $reciever_uid_fk);
+			$tradeReq = $db->createRequest($uid, $tradeStatus, $tradeLocation, $send_cid, $recieve_cid, $reciever_uid_fk);
 			if($tradeReq) {
 				//trade ok
 				$response["error"] = FALSE;
@@ -550,48 +571,37 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 		$cid = (isset($decoded['cid']) ? $decoded['cid'] : null);
 		$title = (isset($decoded['title']) ? $decoded['title'] : null);
 		$description = (isset($decoded['description']) ? $decoded['description'] : null);
-		$rating = (isset($decoded['rating']) ? $decoded['rating'] : null);
-		$feature1 = (isset($decoded['feature1']) ? $decoded['feature1'] : null);
-		$feature2 = (isset($decoded['feature2']) ? $decoded['feature2'] : null);
-		$feature3 = (isset($decoded['feature3']) ? $decoded['feature3'] : null);
-		$feature4 = (isset($decoded['feature4']) ? $decoded['feature4'] : null);
-		$feature5 = (isset($decoded['feature5']) ? $decoded['feature5'] : null);
-		$feature6 = (isset($decoded['feature6']) ? $decoded['feature6'] : null);
-		$feature7 = (isset($decoded['feature7']) ? $decoded['feature7'] : null);
-		$feature8 = (isset($decoded['feature8']) ? $decoded['feature8'] : null);
-		$feature9 = (isset($decoded['feature9']) ? $decoded['feature9'] : null);
-		$feature10 = (isset($decoded['feature10']) ? $decoded['feature10'] : null);
-		$image = (isset($decoded['image']) ? $decoded['image'] : null);
-
+		$classification = (isset($decoded['classification']) ? $decoded['classification'] : null);
+		$images = (isset($decoded['images']) ? $decoded['images'] : null);
+		
 		//update site
-		$site = $db->updateSite($cid, $title, $description, $feature1, $feature2, $feature3, $feature4, $feature5, $feature6, $feature7, $feature8, $feature9, $feature10);
-		
-		$rate = $db->updateOwnedRating($uid, $cid, $rating);
-		
-		if($image){
-			$data = $db->addImage($image, $cid);	
+		$site = $db->updateSite($cid, $title, $description, $classification);
+				
+		$imagesNum = sizeof($images);		
+			
+		if($imagesNum > 0){
+				
+			$j = 0;
+			foreach($images as $i => $image){
+									
+				$imageData = $db->addImages($image['image'.$j.''], $cid);
+				$j++;
+				
+				if(!$imageData){
+					//site failed to store image
+					$response["error"] = TRUE;
+					$response["error_msg"] = "Error occured in storing image!";
+				}
+			}
 		}
 		
 		if ($site) {
 			//site stored successfully
 			$response["error"] = FALSE;
-			$response["cid"] = $site["unique_cid"];
-			$response["site"]["title"] = $site["title"];
-			$response["site"]["description"] = $site["description"];
-			$response["site"]["rating"] = $rate["rating"];
-			$response["site"]["feature1"] = $site["feature1"];
-			$response["site"]["feature2"] = $site["feature2"];
-			$response["site"]["feature3"] = $site["feature3"];
-			$response["site"]["feature4"] = $site["feature4"];
-			$response["site"]["feature5"] = $site["feature5"];
-			$response["site"]["feature6"] = $site["feature6"];
-			$response["site"]["feature7"] = $site["feature7"];
-			$response["site"]["feature8"] = $site["feature8"];
-			$response["site"]["feature9"] = $site["feature9"];
-			$response["site"]["feature10"] = $site["feature10"];
-			$response["site"]["updated_at"] = $site["updated_at"];
-			$response["site"]["image"] = $data["image"];
-
+			if($imagesNum > 0){
+				$response["site"]["images"] = $imagesNum;
+			}
+			
 			echo json_encode($response);
 				
 		} else {
@@ -607,8 +617,6 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 		$uid = (isset($decoded['uid']) ? $decoded['uid'] : null);
 		$cid = (isset($decoded['cid']) ? $decoded['cid'] : null);
 		$rating = (isset($decoded['rating']) ? $decoded['rating'] : null);
-		$image = (isset($decoded['image']) ? $decoded['image'] : null);
-		$imageNum = (isset($decoded['imageNum']) ? $decoded['imageNum'] : null);
 		
 		//update rating
 		$rating = $db->updateRating($active, $uid, $cid, $rating);
