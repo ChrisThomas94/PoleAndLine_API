@@ -914,6 +914,35 @@ if (isset($decoded['tag']) && !empty($decoded['tag'])) {
 			$response["error_msg"] = "Error reporting site!";
 			echo json_encode($response);
 		}
+		
+	} else if($tag == 'fetchGuardians'){
+				
+		$cid = (isset($decoded['cid']) ? $decoded['cid'] : null);
+				
+		$data = $db->siteGuardians($cid);
+				
+		$size = sizeof($data);
+
+		if($data[0] == null){
+			$response["error"] = FALSE;
+			$response["size"] = 0;
+			echo json_encode($response);
+		} else if ($data) {
+			
+			// users found
+			$response["error"] = FALSE;
+			$response["size"] = $size;
+			for($i = 0; $i<$size; $i++){
+								
+				$response["user$i"] = $data[$i];
+			}
+			echo json_encode($response);
+		} else {
+			//users not found
+			$response["error"] = TRUE;
+			$response["error_msg"] = "Error fetching guardians!";
+			echo json_encode($response);
+		}
 	
 	} else {
         // request failed

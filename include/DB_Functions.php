@@ -747,7 +747,26 @@ class DB_Functions {
 		} else {
 			return false;
 		}
+	}
+	
+	public function siteGuardians($cid){
 		
+		$result = mysqli_query($this->db->con, "SELECT name, email, unique_uid, profile_pic, country, token, userType FROM users INNER JOIN user_has_campsites ON user_has_campsites.user_fk = users.unique_uid WHERE user_has_campsites.campsite_fk = '$cid' AND user_has_campsites.active = '1'");
+		
+		// check for result 
+        $no_of_rows = mysqli_num_rows($result);
+				
+		if ($no_of_rows > 0) {
+		
+            while ($row = $result->fetch_assoc()) {
+				$new_array[] = $row;
+			}	
+			return $new_array;
+        } else if ($no_of_rows == 0){
+			return true;
+		} else {
+            return false;
+        }
 	}
 }
 ?>
